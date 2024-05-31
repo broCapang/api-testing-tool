@@ -1,0 +1,45 @@
+access_token="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJpcmZhbiIsImV4cCI6MTcxNzE3NTc3MX0.RK-8tx7aJDm7iVTb5X0aFNv8F6rf9nduYDA_Zg53uEY"
+
+### Create User
+POST http://localhost:8000/create_user/
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJpcmZhbiIsImV4cCI6MTcxNzE3NTc3MX0.RK-8tx7aJDm7iVTb5X0aFNv8F6rf9nduYDA_Zg53uEY
+
+{
+  "username": "newuser2",
+  "email": "newuser2@example.com",
+  "password": "newpassword"
+}
+
+### Get Token
+POST http://localhost:8000/token
+Content-Type: application/x-www-form-urlencoded
+
+username=irfan&password=abc123
+
+### Get Current User Info
+GET http://localhost:8000/users/me/
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJpcmZhbiIsImV4cCI6MTcxNzE3NTc3MX0.RK-8tx7aJDm7iVTb5X0aFNv8F6rf9nduYDA_Zg53uEY
+
+### Get User Items
+GET http://localhost:8000/users/me/items
+Authorization: Bearer 
+
+### Create Security Test Case
+POST http://localhost:8000/create_security_test_case/
+Content-Type: application/json
+Authorization: Bearer 
+
+{
+  "name": "SQL Injection",
+  "description": "Test for SQL Injection vulnerability",
+  "payload": "' OR '1'='1"
+}
+
+### Get Security Test Cases
+GET http://localhost:8000/security_test_cases/
+Authorization: Bearer 
+
+### Get Security Test Case by ID
+GET http://localhost:8000/security_test_cases/1
+Authorization: Bearer 
