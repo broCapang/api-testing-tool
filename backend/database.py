@@ -1,8 +1,14 @@
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
+import os
+from dotenv import load_dotenv
+'''
+The functions of this file are to create the database engine and session.
+'''
+load_dotenv()  # Load environment variables from .env file
 
-SQLALCHEMY_DATABASE_URL = "postgresql://fastapi:fastapi@localhost/api-testing-tool"
+SQLALCHEMY_DATABASE_URL = os.getenv("SQLALCHEMY_DATABASE_URL")
 
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
 
