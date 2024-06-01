@@ -9,8 +9,11 @@ const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   
   <React.StrictMode>
-
-    <App />
+    <body className="bg-gray-100 dark:bg-gray-900">
+      
+      <App />
+    </body>
+    
   </React.StrictMode>
 );
 
