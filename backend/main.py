@@ -1,5 +1,6 @@
 from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from typing import List
 from datetime import datetime, timedelta, timezone
@@ -24,6 +25,17 @@ app = FastAPI()
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
+origins = [
+    "http://localhost:3000",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Dependency
 def get_db():
@@ -83,6 +95,23 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
     )
     return {"access_token": access_token, "token_type": "bearer"}
 
+async def verify_token(token: str = Depends(oauth2_scheme)):
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        username: str = payload.get("sub")
+        if username is None:
+            raise HTTPException(status_code=403, detail="Token is invalid")
+        token_data = schemas.TokenData(username=username)
+        return token_data
+    except JWTError:
+        raise HTTPException(status_code=403, detail="Token is invalid")
+
+
+@app.get("/verify_token/")
+async def verify_user_token(token_data: schemas.TokenData = Depends(verify_token)):
+    return {"username": token_data.username}
+
+
 @app.post("/create_user/", response_model=schemas.User)
 def create_user(
     user: schemas.UserCreate = Depends(get_current_active_user), 
@@ -123,3 +152,4 @@ def read_security_test_case(security_test_case_id: int, db: Session = Depends(ge
     if db_security_test_case is None:
         raise HTTPException(status_code=404, detail="Security test case not found")
     return db_security_test_case
+

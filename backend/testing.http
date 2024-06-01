@@ -43,3 +43,7 @@ Authorization: Bearer
 ### Get Security Test Case by ID
 GET http://localhost:8000/security_test_cases/1
 Authorization: Bearer 
+
+### Get Token Verification
+GET http://localhost:8000/verify_token/
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJpcmZhbiIsImV4cCI6MTcxNzIyNTQwOX0.CZacx786k-StqVP2kVqUKbIbUFD77xlmQat2D-PCxEY
