@@ -46,3 +46,16 @@ Authorization: Bearer
 ### Get Token Verification
 GET http://localhost:8000/verify_token/
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJpcmZhbiIsImV4cCI6MTcxNzIyNTQwOX0.CZacx786k-StqVP2kVqUKbIbUFD77xlmQat2D-PCxEY
+
+### Testing VamPI API
+GET http://localhost:5000/users/v1/'
+
+
+### Using security_test/sqli/ to test VamPI API
+POST http://localhost:8000/security_test/sqli/
+Content-Type: application/json
+
+{
+  "URL": "http://localhost:5000/users/v1/",
+  "payload": "' or 1=1-- -"
+}

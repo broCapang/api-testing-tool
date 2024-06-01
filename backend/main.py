@@ -1,4 +1,4 @@
-from fastapi import Depends, FastAPI, HTTPException, status
+from fastapi import Depends, FastAPI, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
@@ -11,6 +11,8 @@ from dotenv import load_dotenv
 from . import crud, models, schemas
 from .database import SessionLocal, engine
 from typing import Union
+from .securityTesting import sqlinjection
+
 
 # openssl rand -hex 32
 SECRET_KEY = os.getenv("SECRET_KEY")
@@ -153,3 +155,11 @@ def read_security_test_case(security_test_case_id: int, db: Session = Depends(ge
         raise HTTPException(status_code=404, detail="Security test case not found")
     return db_security_test_case
 
+@app.post("/security_test/sqli/")
+async def sql_injection(request: Request):
+    body = await request.json()
+    url = body.get("URL")
+    payload = body.get("payload")
+    sql_injection_response = sqlinjection.sql_injection(url, payload)
+
+    return {"response": sql_injection_response} 
