@@ -1,4 +1,4 @@
-import YamlEditor from "../component/fileEditor/yamlEditor";
+import YamlEditor from "../components/fileEditor/yamlEditor";
 
 function Home() {
     return (
