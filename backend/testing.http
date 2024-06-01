@@ -3,7 +3,6 @@ access_token="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJpcmZhbiIsImV4cCI6M
 ### Create User
 POST http://localhost:8000/create_user/
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJpcmZhbiIsImV4cCI6MTcxNzE3NTc3MX0.RK-8tx7aJDm7iVTb5X0aFNv8F6rf9nduYDA_Zg53uEY
 
 {
   "username": "newuser2",
