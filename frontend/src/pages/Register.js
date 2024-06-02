@@ -13,7 +13,7 @@ const [fullname, setFullname] = useState('');
   const handleSubmit = async (event) => {
       event.preventDefault();
 
-      const response = await fetch('http://localhost:8000/create_user/', {
+      const response = await fetch('http://localhost:8000/user/create', {
           method: 'POST',
           headers: {
               'Content-Type': 'application/json',

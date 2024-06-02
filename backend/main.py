@@ -1,4 +1,4 @@
-from fastapi import Depends, FastAPI, HTTPException, status
+from fastapi import Depends, FastAPI, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
@@ -11,6 +11,8 @@ from dotenv import load_dotenv
 from . import crud, models, schemas
 from .database import SessionLocal, engine
 from typing import Union
+from .securityTesting import sqlinjection
+
 
 # openssl rand -hex 32
 SECRET_KEY = os.getenv("SECRET_KEY")
@@ -107,12 +109,12 @@ async def verify_token(token: str = Depends(oauth2_scheme)):
         raise HTTPException(status_code=403, detail="Token is invalid")
 
 
-@app.get("/verify_token/")
+@app.get("/token/verify")
 async def verify_user_token(token_data: schemas.TokenData = Depends(verify_token)):
     return {"username": token_data.username}
 
 
-@app.post("/create_user/", response_model=schemas.User)
+@app.post("/user/create/", response_model=schemas.User)
 def create_user(
     user: schemas.UserCreate, 
     db: Session = Depends(get_db)
@@ -122,34 +124,63 @@ def create_user(
         raise HTTPException(status_code=400, detail="Email already registered")
     return crud.create_user(db=db, user=user)
 
-@app.get("/users/", response_model=List[schemas.User])
+
+@app.get("/user/users/", response_model=List[schemas.User])
 def read_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     users = crud.get_users(db, skip=skip, limit=limit)
     return users
 
-@app.get("/users/{user_id}", response_model=schemas.User)
+@app.get("/user/{user_id}", response_model=schemas.User)
 def read_user(user_id: int, db: Session = Depends(get_db)):
     db_user = crud.get_user(db, user_id=user_id)
     if db_user is None:
         raise HTTPException(status_code=404, detail="User not found")
     return db_user
 
-@app.post("/create_security_test_case/", response_model=schemas.SecurityTestCase)
-def create_security_test_case(security_test_case: schemas.SecurityTestCaseBase, db: Session = Depends(get_db)):
+@app.get("/user/profile/", response_model=schemas.User)
+async def read_user_profile(
+    token_data: schemas.TokenData = Depends(verify_token), 
+    db: Session = Depends(get_db)):
+    db_user = crud.get_user_by_username(db, username=token_data.username)
+    return db_user
+
+@app.post("/security/create/", response_model=schemas.SecurityTestCase)
+def create_security_test_case(
+    security_test_case: schemas.SecurityTestCaseBase,
+    token_data: schemas.TokenData = Depends(verify_token),
+    db: Session = Depends(get_db)):
     db_security_test_case = crud.get_security_test_cases_by_name(db, name=security_test_case.name)
     if db_security_test_case:
         raise HTTPException(status_code=400, detail="Name already registered")
     return crud.create_security_test_case(db=db, security_test_case=security_test_case)
 
-@app.get("/security_test_cases/", response_model=List[schemas.SecurityTestCase])
-def read_security_test_cases(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+@app.get("/security/security_test_cases/", response_model=List[schemas.SecurityTestCase])
+def read_security_test_cases(
+    skip: int = 0, 
+    limit: int = 100,
+    token_data: schemas.TokenData = Depends(verify_token),
+    db: Session = Depends(get_db)):
     security_test_cases = crud.get_security_test_cases(db, skip=skip, limit=limit)
     return security_test_cases
 
-@app.get("/security_test_cases/{security_test_case_id}", response_model=schemas.SecurityTestCase)
-def read_security_test_case(security_test_case_id: int, db: Session = Depends(get_db)):
+@app.get("/security/{security_test_case_id}", response_model=schemas.SecurityTestCase)
+def read_security_test_case(
+    security_test_case_id: int, 
+    token_data: schemas.TokenData = Depends(verify_token),
+    db: Session = Depends(get_db)):
     db_security_test_case = crud.get_security_test_case(db, security_test_case_id=security_test_case_id)
     if db_security_test_case is None:
         raise HTTPException(status_code=404, detail="Security test case not found")
     return db_security_test_case
 
+@app.post("/security/sqli/")
+async def sql_injection(
+    request: Request,
+    token_data: schemas.TokenData = Depends(verify_token)
+    ):
+    body = await request.json()
+    url = body.get("URL")
+    payload = body.get("payload")
+    sql_injection_response = sqlinjection.sql_injection(url, payload)
+
+    return {"response": sql_injection_response} 
