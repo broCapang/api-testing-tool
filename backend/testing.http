@@ -17,22 +17,22 @@ Content-Type: application/x-www-form-urlencoded
 username=irfan&password=abc123
 
 ### Get Current User Info
-GET http://localhost:8000/users/me/
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJpcmZhbiIsImV4cCI6MTcxNzE3NTc3MX0.RK-8tx7aJDm7iVTb5X0aFNv8F6rf9nduYDA_Zg53uEY
+GET http://localhost:8000/user/profile/
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJpcmZhbiIsImV4cCI6MTcxNzMwOTUwMn0.mUdYc_OgaHRMmyli-HAbFQ_iMBJ87NKSjKikULEqyVg
 
 ### Get User Items
 GET http://localhost:8000/users/me/items
 Authorization: Bearer 
 
 ### Create Security Test Case
-POST http://localhost:8000/create_security_test_case/
+POST http://localhost:8000/security/create/
 Content-Type: application/json
-Authorization: Bearer 
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJpcmZhbiIsImV4cCI6MTcxNzMxMTA3N30.8_O_Nms5cQ8thuMRkZ9y6kF4Tr7SH-HV1pvntpMIHG0
 
 {
-  "name": "SQL Injection",
+  "name": "SQL Injection 3",
   "description": "Test for SQL Injection vulnerability",
-  "payload": "' OR '1'='1"
+  "payload": "'"
 }
 
 ### Get Security Test Cases
@@ -44,16 +44,17 @@ GET http://localhost:8000/security_test_cases/1
 Authorization: Bearer 
 
 ### Get Token Verification
-GET http://localhost:8000/verify_token/
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJpcmZhbiIsImV4cCI6MTcxNzIyNTQwOX0.CZacx786k-StqVP2kVqUKbIbUFD77xlmQat2D-PCxEY
+GET http://localhost:8000/token/verify
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJpcmZhbiIsImV4cCI6MTcxNzMwOTUwMn0.mUdYc_OgaHRMmyli-HAbFQ_iMBJ87NKSjKikULEqyVg
 
 ### Testing VamPI API
 GET http://localhost:5000/users/v1/'
 
 
 ### Using security_test/sqli/ to test VamPI API
-POST http://localhost:8000/security_test/sqli/
+POST http://localhost:8000/security/sqli/
 Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJpcmZhbiIsImV4cCI6MTcxNzMxMTA3N30.8_O_Nms5cQ8thuMRkZ9y6kF4Tr7SH-HV1pvntpMIHG0
 
 {
   "URL": "http://localhost:5000/users/v1/",

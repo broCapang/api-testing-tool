@@ -14,7 +14,7 @@ const AuthWrapper = ({ children }) => {
                 return;
             }
             try {
-                const response = await fetch('http://localhost:8000/verify_token/', {
+                const response = await fetch('http://localhost:8000/token/verify', {
                     headers: {
                         'Authorization': `Bearer ${token}`,
                     },

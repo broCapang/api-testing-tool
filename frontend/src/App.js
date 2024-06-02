@@ -7,6 +7,7 @@ import Header from './components/header/Header';
 import AuthWrapper from './components/auth/authWrapper';
 import Register from './pages/Register';
 import Logout from './pages/Logout';
+import Profile from './pages/Profile';
 
 function App() {
     return (
@@ -20,6 +21,11 @@ function App() {
                     <Route path="/" element={
                         <AuthWrapper>
                             <Home />
+                        </AuthWrapper>
+                    } />
+                    <Route path="/profile" element={
+                        <AuthWrapper>
+                            <Profile />
                         </AuthWrapper>
                     } />
 
