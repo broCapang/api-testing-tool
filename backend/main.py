@@ -166,21 +166,30 @@ def read_security_test_cases(
 @app.get("/security/{security_test_case_id}", response_model=schemas.SecurityTestCase)
 def read_security_test_case(
     security_test_case_id: int, 
-    token_data: schemas.TokenData = Depends(verify_token),
+    # token_data: schemas.TokenData = Depends(verify_token),
     db: Session = Depends(get_db)):
     db_security_test_case = crud.get_security_test_case(db, security_test_case_id=security_test_case_id)
     if db_security_test_case is None:
         raise HTTPException(status_code=404, detail="Security test case not found")
     return db_security_test_case
 
-@app.post("/security/sqli/")
+@app.post("/security/runTest/")
 async def sql_injection(
     request: Request,
-    token_data: schemas.TokenData = Depends(verify_token)
+    token_data: schemas.TokenData = Depends(verify_token),
+    db: Session = Depends(get_db)
     ):
     body = await request.json()
-    url = body.get("URL")
-    payload = body.get("payload")
-    sql_injection_response = sqlinjection.sql_injection(url, payload)
+    url = body.get("url")
+    id = body.get("id")
 
-    return {"response": sql_injection_response} 
+    db_security_test_case = crud.get_security_test_case(db, security_test_case_id=id)
+    if db_security_test_case is None:
+        raise HTTPException(status_code=404, detail="Security test case not found")
+    
+    if db_security_test_case.id == 14:
+        result = sqlinjection.sql_injection(url, db_security_test_case.payload)
+        return {"result": result, "url": url}
+
+
+    return {"result": id, "url": url}

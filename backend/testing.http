@@ -5,8 +5,8 @@ POST http://localhost:8000/create_user/
 Content-Type: application/json
 
 {
-  "username": "newuser2",
-  "email": "newuser2@example.com",
+  "username": "newuser3",
+  "email": "newuser3@example.com",
   "password": "newpassword"
 }
 
@@ -18,19 +18,16 @@ username=irfan&password=abc123
 
 ### Get Current User Info
 GET http://localhost:8000/user/profile/
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJpcmZhbiIsImV4cCI6MTcxNzMwOTUwMn0.mUdYc_OgaHRMmyli-HAbFQ_iMBJ87NKSjKikULEqyVg
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJpcmZhbiIsImV4cCI6MTcxNzMzODcyOX0.5K1rdm705xCJatHBRf9FkRgyni2MAGan2ByW6ZvOT3o
 
-### Get User Items
-GET http://localhost:8000/users/me/items
-Authorization: Bearer 
 
 ### Create Security Test Case
 POST http://localhost:8000/security/create/
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJpcmZhbiIsImV4cCI6MTcxNzMxMTA3N30.8_O_Nms5cQ8thuMRkZ9y6kF4Tr7SH-HV1pvntpMIHG0
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJpcmZhbiIsImV4cCI6MTcxNzMzODcyOX0.5K1rdm705xCJatHBRf9FkRgyni2MAGan2ByW6ZvOT3o
 
 {
-  "name": "SQL Injection 3",
+  "name": "SQL Injection 5",
   "description": "Test for SQL Injection vulnerability",
   "payload": "'"
 }
@@ -39,9 +36,9 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJpcmZhbiIsI
 GET http://localhost:8000/security_test_cases/
 Authorization: Bearer 
 
-### Get Security Test Case by ID
-GET http://localhost:8000/security_test_cases/1
-Authorization: Bearer 
+### Get Security Test Case
+GET http://localhost:8000/security/security_test_cases/
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJpcmZhbiIsImV4cCI6MTcxNzMxNTU2Mn0.2TTr9Y_fmtZ50zFR8FVrDq_jqwaZ_LH5xg3kpbxNCGY
 
 ### Get Token Verification
 GET http://localhost:8000/token/verify
@@ -52,11 +49,11 @@ GET http://localhost:5000/users/v1/'
 
 
 ### Using security_test/sqli/ to test VamPI API
-POST http://localhost:8000/security/sqli/
+POST http://localhost:8000/security/runTest/
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJpcmZhbiIsImV4cCI6MTcxNzMxMTA3N30.8_O_Nms5cQ8thuMRkZ9y6kF4Tr7SH-HV1pvntpMIHG0
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJpcmZhbiIsImV4cCI6MTcxNzM0NTUxN30.CfbGxOC8kM_bfFeXV4D2UpwWZRTbw054LATla4DT_Jg
 
 {
-  "URL": "http://localhost:5000/users/v1/",
-  "payload": "' or 1=1-- -"
+  "url": "http://localhost:5000/users/v1/",
+  "id": "14"
 }
