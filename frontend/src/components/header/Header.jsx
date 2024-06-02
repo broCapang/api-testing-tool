@@ -6,14 +6,15 @@ import {
 
 function Header() {
     const [token, setToken] = useState(localStorage.getItem('access_token'));
+    
 
     return (
 
         <header>
             <nav className="bg-white dark:bg-gray-900 fixed w-full z-20 top-0 start-0 border-b border-gray-200 dark:border-gray-600">
                 <div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
-                    <a className="flex items-center space-x-3 rtl:space-x-reverse">
-                        <img src="https://gravatar.com/userimage/237902374/d690a94093196f2dfb40ce0dc63d32e8.jpeg?size=256" className="h-8" alt="Me" />
+                    <a href="/" className="flex items-center space-x-3 rtl:space-x-reverse">
+                        <img src="/icons8-shield-96.png" className="h-8" alt="Me" />
                         <span className="self-center text-2xl font-semibold whitespace-nowrap text-white">DataShield</span>
                     </a>
 
