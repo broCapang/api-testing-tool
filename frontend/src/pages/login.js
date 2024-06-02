@@ -38,13 +38,12 @@ const Login = ({ setToken }) => {
   return (
 
     <div className="flex items-center justify-center h-screen">
-      <div className="bg-white dark:bg-gray-800 shadow-lg rounded-lg w-96 p-6">
+      <div className="bg-gray-800 shadow-lg rounded-lg w-96 p-6">
         <h2 className="text-2xl font-semibold text-gray-800 dark:text-white text-center">Login</h2>
         <form className="mt-6" onSubmit={handleSubmit}>
           <div>
             <label htmlFor="username" className="block text-xs font-semibold text-gray-600 uppercase">Username</label>
-            <input id="username" type="username" name="username" placeholder="
-            username" autoComplete="username" value={username} onChange={(e) => setUsername(e.target.value)} className="block w-full border-none bg-gray-100 h-8 px-2 rounded-lg focus:outline-none focus:bg-white mt-2" required />
+            <input id="username" type="username" name="username" placeholder="username" autoComplete="username" value={username} onChange={(e) => setUsername(e.target.value)} className="block w-full border-none bg-gray-100 h-8 px-2 rounded-lg focus:outline-none focus:bg-white mt-2" required />
           </div>
           <div className="mt-4">
             <label htmlFor="password" className="block text-xs font-semibold text-gray-600 uppercase">Password</label>
