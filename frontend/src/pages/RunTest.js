@@ -80,20 +80,20 @@ const RunTest = () => {
     }
 
     return (
-        <div className="flex items-center justify-center min-h-screen px-4 bg-gray-100 dark:bg-gray-900">
-            <div className="bg-white dark:bg-gray-800 shadow-lg rounded-lg max-w-md w-full p-6">
-                <h2 className="text-2xl font-semibold text-gray-800 dark:text-white text-center">Run Test</h2>
+        <div className="flex items-center justify-center min-h-screen px-4 bg-gray-900">
+            <div className="bg-white shadow-lg rounded-lg max-w-md w-full p-6">
+                <h2 className="text-2xl font-semibold text-center">Run Test</h2>
                 <form className="mt-6" onSubmit={handleSubmit}>
                     <div className="mb-4">
-                        <label htmlFor="url" className="block text-sm font-semibold text-gray-600 uppercase">URL</label>
-                        <input id="url" type="url" name="url" placeholder="URL" autoComplete="url" value={url} onChange={(e) => setUrl(e.target.value)} className="block w-full border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-700 dark:text-white h-10 px-3 rounded-lg focus:outline-none focus:bg-white focus:dark:bg-gray-600 mt-2" required />
+                        <label htmlFor="url" className="block text-sm font-semibold uppercase ">URL</label>
+                        <input id="url" type="url" name="url" placeholder="URL" autoComplete="url" value={url} onChange={(e) => setUrl(e.target.value)} className="block w-full border border-gray-400 bg-white text-black h-10 px-3 rounded-lg focus:bg-gray-200 mt-2" required />
                     </div>
                     <div className="mb-4">
-                        <label className="block text-sm font-semibold text-gray-600 uppercase">Test Type</label>
+                        <label className="block text-sm font-semibold uppercase">Test Type</label>
                         {tests.map((test) => (
                             <div key={test.id} className="flex items-center mt-2">
                                 <input type="radio" id={`test-${test.id}`} name="test" value={test.id} onChange={() => setSelectedTest(test.id)} className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300" required />
-                                <label htmlFor={`test-${test.id}`} className="ml-2 block text-sm text-gray-700 dark:text-gray-300">
+                                <label htmlFor={`test-${test.id}`} className="ml-2 block text-sm text-gray-700">
                                     <strong>{test.name}</strong>: {test.description}
                                 </label>
                             </div>

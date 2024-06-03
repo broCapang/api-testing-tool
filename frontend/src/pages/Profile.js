@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
+import { Container, Box, Paper, Typography, TextField, Button } from '@mui/material';
 
 // Desc: Profile page for the user to view their profile
 // it will show something like this:
@@ -50,30 +51,67 @@ const Profile = () => {
     }, [navigate, username, email, fullname, password]);
 
     return (
-        <div className="flex items-center justify-center h-screen">
-            <div className="bg-white dark:bg-gray-800 shadow-lg rounded-lg w-96 p-6">
-                <h2 className="text-2xl font-semibold text-gray-800 dark:text-white text-center">Profile</h2>
-                <form className="mt-6">
-                    <div>
-                        <label htmlFor="username" className="block text-xs font-semibold text-gray-600 uppercase">Username</label>
-                        <input id="username" type="username" name="username" placeholder="username" autoComplete="username" value={username} className="block w-full border-none bg-gray-100 h-8 px-2 rounded-lg focus:outline-none focus:bg-white mt-2" required />
-                    </div>
-                    <div className="mt-4">
-                        <label htmlFor="email" className="block text-xs font-semibold text-gray-600 uppercase">Email</label>
-                        <input id="email" type="email" name="email" placeholder={email} autoComplete="email" value={email} className="block w-full border-none bg-gray-100 h-8 px-2 rounded-lg focus:outline-none focus:bg-white mt-2" required />
-                    </div>
-                    <div className="mt-4">
-                        <label htmlFor="fullname" className="block text-xs font-semibold text-gray-600 uppercase">Fullname</label>
-                        <input id="fullname" type="fullname" name="fullname" placeholder="fullname" autoComplete="fullname" value={fullname} className="block w-full border-none bg-gray-100 h-20 px-2 rounded-lg focus:outline-none focus:bg-white mt-2" required />
-                    </div>
-                    <div className="mt-4">
-                        <label htmlFor="password" className="block text-xs font-semibold text-gray-600 uppercase">Password</label>
-                        <input id="password" type="password" name="password" placeholder="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} className="block w-full border-none bg-gray-100 h-8 px-2 rounded-lg focus:outline-none focus:bg-white mt-2" required />
-                    </div>
-                    <button type="submit" className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-500 text-white uppercase text-lg font-semibold p-2 rounded-lg mt-4">Update</button>
-                </form>
-            </div>
-        </div>
+        <Container maxWidth="sm" className="justify-center h-screen content-center">
+        <Paper elevation={3} className="p-10 mb-6">
+            <Typography variant="h5" className="mb-4 text-center">Profile Information</Typography>
+            <Box className="text-black">
+                <Typography variant="body1"><strong>Username:</strong> {username}</Typography>
+                <Typography variant="body1"><strong>Email:</strong> {email}</Typography>
+                <Typography variant="body1"><strong>Full Name:</strong> {fullname}</Typography>
+            </Box>
+        </Paper>
+        <Paper elevation={3} className="p-6">
+            <Typography variant="h5" className="mb-4 text-center">Update Profile</Typography>
+            <form >
+                <TextField
+                    fullWidth
+                    label="Username"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    margin="normal"
+                    variant="outlined"
+                    required
+                />
+                <TextField
+                    fullWidth
+                    label="Email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    margin="normal"
+                    variant="outlined"
+                    required
+                />
+                <TextField
+                    fullWidth
+                    label="Full Name"
+                    value={fullname}
+                    onChange={(e) => setFullname(e.target.value)}
+                    margin="normal"
+                    variant="outlined"
+                />
+                <TextField
+                    fullWidth
+                    label="Password"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    margin="normal"
+                    variant="outlined"
+                    required
+                />
+                <Button
+                    fullWidth
+                    type="submit"
+                    variant="contained"
+                    color="primary"
+                    className="mt-4"
+                >
+                    Update
+                </Button>
+            </form>
+        </Paper>
+    </Container>
     );
 
 

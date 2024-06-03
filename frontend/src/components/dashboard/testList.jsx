@@ -70,10 +70,8 @@ const TestList = () => {
 
     return (
         <div>
-        <Typography variant="h4" align="center" gutterBottom className='text-white'>
-            Security Test Cases
-        </Typography>
-        <Box sx={{ maxWidth: '100%', m: 'auto', p: 4, py: 10 }} >
+        
+        <Box >
         
         <TableContainer component={Paper}>
             <Table>

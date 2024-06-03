@@ -4,13 +4,14 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { useEffect } from 'react';
 import Login from './pages/Login';
 import Home from './pages/Home';
-import Header from './components/header/header';
+import Header from './components/header/Header';
 import AuthWrapper from './components/auth/authWrapper';
 import Register from './pages/Register';
 import Logout from './pages/Logout';
 import Profile from './pages/Profile';
 import AddTest from './pages/AddTest';
 import RunTest from './pages/RunTest';
+import Dashboard from './views/dashboard';
 
 function App() {
     useEffect(() => {
@@ -27,7 +28,7 @@ function App() {
                     <Route path="/register" element={<Register />} />
                     <Route path="/" element={
                         <AuthWrapper>
-                            <Home />
+                            <Dashboard />
                         </AuthWrapper>
                     } />
                     <Route path="/profile" element={
