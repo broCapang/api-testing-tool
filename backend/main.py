@@ -11,7 +11,7 @@ from dotenv import load_dotenv
 from . import crud, models, schemas
 from .database import SessionLocal, engine
 from typing import Union
-from .securityTesting import sqlinjection
+from .securityTesting import sqlinjection, bola
 
 
 # openssl rand -hex 32
@@ -189,6 +189,9 @@ async def sql_injection(
     
     if db_security_test_case.id == 14:
         result = sqlinjection.sql_injection(url, db_security_test_case.payload)
+        return {"result": result, "url": url}
+    if db_security_test_case.id == 17:
+        result = bola.bola(url, db_security_test_case.payload)
         return {"result": result, "url": url}
 
 

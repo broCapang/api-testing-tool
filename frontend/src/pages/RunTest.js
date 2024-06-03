@@ -65,17 +65,22 @@ const RunTest = () => {
                     id: selectedTest,
                 }),
             });
-            console.log(id, url);
+            console.log("Here",selectedTest, url);
             if (!response.ok) {
                 console.log(response)
-                throw new Error('Token verification failed');
             }
             response.json().then(data => {
                 console.log(data);
-                alert('Test ran successfully');
+                if(data.result){
+                    alert('Test Passed: ' + url + ' is vulnerable');
+                }else {
+                    alert('Test Failed');
+                }
             });
+        
         } catch (error) {
-            console.error(error);
+            console.log("Error");
+            alert(error);
         }
     }
 

@@ -1,6 +1,6 @@
 import React from 'react';
-import { Container, Grid, Paper, Typography, Box } from '@mui/material';
-import { LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
+import { Container, Grid, Paper, Typography } from '@mui/material';
+import { LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, PieChart, Pie, Cell, Legend } from 'recharts';
 import TestList from '../components/dashboard/testList';
 
 const dataLine = [
@@ -12,22 +12,11 @@ const dataLine = [
   { name: 'Feb', uv: 239 },
 ];
 
-const dataBar = [
-  { name: '17', uv: 400 },
-  { name: '18', uv: 300 },
-  { name: '19', uv: 200 },
-  { name: '20', uv: 278 },
-  { name: '21', uv: 189 },
-  { name: '22', uv: 239 },
-  { name: '23', uv: 349 },
-  { name: '24', uv: 200 },
-];
-
 const dataPie = [
-  { name: 'Group A', value: 400 },
-  { name: 'Group B', value: 300 },
-  { name: 'Group C', value: 300 },
-  { name: 'Group D', value: 200 },
+  { name: 'BOLA', value: 24 },
+  { name: 'SQLI', value: 40 },
+  { name: 'SSRF', value: 12 },
+  { name: 'SSTI', value: 15 },
 ];
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
@@ -82,47 +71,35 @@ const Dashboard = () => {
         </Grid>
         <Grid item xs={12} md={4}>
           <Paper className="p-6 rounded-lg shadow-lg bg-white">
-            <Typography variant="h6" className="mb-4 text-gray-800">
+            <Typography variant="h6" align='center' className="mb-4 text-gray-800">
               Percentage Vulnerability Types
             </Typography>
             <PieChart width={300} height={300}>
+            <Legend layout="horizontal" verticalAlign="top" align="right" />
               <Pie
                 data={dataPie}
                 cx="50%"
                 cy="50%"
-                labelLine={false}
+                labelLine={true}
+                label={true}
                 outerRadius={80}
                 fill="#8884d8"
                 dataKey="value"
               >
                 {dataPie.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  <Cell key={`cell-${index}`} fill={COLORS[index]} />
                 ))}
               </Pie>
             </PieChart>
           </Paper>
         </Grid>
-        <Grid item xs={12} md={8}>
+        <Grid item xs={12} md={16}>
         <Paper className="p-6 rounded-lg shadow-lg bg-white">
           <Typography variant="h6" className="mb-4 text-gray-800">
             Security Test Cases
           </Typography>
           < TestList />
         </Paper>
-        </Grid>
-        <Grid item xs={12} md={4}>
-          <Paper className="p-6 rounded-lg shadow-lg bg-white">
-            <Typography variant="h6" className="mb-4 text-gray-800">
-              Weekly Login
-            </Typography>
-            <BarChart width={300} height={300} data={dataBar}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip />
-              <Bar dataKey="uv" fill="#8884d8" />
-            </BarChart>
-          </Paper>
         </Grid>
         
       </Grid>

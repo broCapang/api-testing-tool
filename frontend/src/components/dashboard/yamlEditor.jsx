@@ -43,6 +43,7 @@ function YamlEditor() {
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }
+            alert('Test case data created successfully');
             if (response.status === 201) {
                 alert('Test case data created successfully');
             }
