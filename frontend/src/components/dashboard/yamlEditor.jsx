@@ -4,7 +4,7 @@ import yaml from 'js-yaml';
 function YamlEditor() {
     const [name, setName] = useState('Type of test case data');
     const [desc, setDesc] = useState('Description of test case data');
-    const [yamlData, setYamlData] = useState('Test case data data in YAML');
+    const [yamlData, setYamlData] = useState('Test case data in YAML');
     const textareaRef = useRef(null);
 
     const handleNameChange = (e) => {
@@ -43,6 +43,7 @@ function YamlEditor() {
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }
+            alert('Test case data created successfully');
             if (response.status === 201) {
                 alert('Test case data created successfully');
             }
@@ -76,8 +77,8 @@ function YamlEditor() {
     }, [name, yamlData]);
 
     return (
-        <div className="max-w-screen-lg m-auto p-4 py-10">
-            <h1 className="text-center text-2xl font-bold mb-4 text-white">Edit YAML Data</h1>
+        <div className="max-w-screen-lg m-auto p-4 py-20 content-center h-full">
+            <h1 className="text-center text-2xl font-bold mb-4 text-white">Add Test Case</h1>
             <form className="w-full max-w-lg m-auto" onSubmit={handleSubmit}>
             <div className="mb-4">
                 <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="name">
@@ -107,7 +108,7 @@ function YamlEditor() {
             </div>
             <div>
                 <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="yamlData">
-                    YAML Data
+                    Test Case
                 </label>
                 <textarea
                     id="yamlData"
