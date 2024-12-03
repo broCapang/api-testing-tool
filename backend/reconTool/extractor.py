@@ -150,6 +150,7 @@ async def run_crawler(domain):
 
     # Filter and combine responses
     api_endpoints = filter_and_combine_responses(api_call_data, domain)
+    api_endpoints = api_endpoints[1:]
 
 
     return {
