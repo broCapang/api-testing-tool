@@ -24,7 +24,7 @@ class User(UserBase):
 
 
     class Config:
-        orm_mode = True
+        from_attributes = True  # Pydantic v2 syntax
 
 class SecurityTestCaseBase(BaseModel):
     name: str
@@ -35,4 +35,8 @@ class SecurityTestCase(SecurityTestCaseBase):
     id: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True  # Pydantic v2 syntax
+
+class DomainRequest(BaseModel):
+    domain: str
+

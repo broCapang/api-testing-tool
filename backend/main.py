@@ -7,12 +7,11 @@ from datetime import datetime, timedelta, timezone
 from jose import JWTError, jwt
 import os
 from dotenv import load_dotenv
-
-from . import crud, models, schemas
-from .database import SessionLocal, engine
+from backend import crud, models, schemas
+from backend.database import SessionLocal, engine
 from typing import Union
-from .securityTesting import sqlinjection, bola
-
+from backend.securityTesting import sqlinjection, bola
+from backend.reconTool.extractor import run_crawler
 
 # openssl rand -hex 32
 SECRET_KEY = os.getenv("SECRET_KEY")
@@ -196,3 +195,17 @@ async def sql_injection(
 
 
     return {"result": id, "url": url}
+
+@app.post("/crawl")
+async def crawl(domain_request: schemas.DomainRequest):
+    try:
+        # Call the existing run_crawler function with the domain from the request
+        result = await run_crawler(domain_request.domain)
+        # Extract crawled URLs from the result and return them
+        return {"api_endpoints": result["api_endpoints"]}
+    except ValueError as e:
+        # Handle invalid domain error
+        raise HTTPException(status_code=400, detail=f"Invalid domain: {str(e)}")
+    except Exception as e:
+        # Handle any other errors
+        raise HTTPException(status_code=500, detail="Internal Server Error")
