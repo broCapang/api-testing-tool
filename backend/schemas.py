@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 from pydantic import BaseModel
 
 class Token(BaseModel):
@@ -24,7 +24,7 @@ class User(UserBase):
 
 
     class Config:
-        from_attributes = True  # Pydantic v2 syntax
+        from_attributes = True
 
 class SecurityTestCaseBase(BaseModel):
     name: str
@@ -35,8 +35,51 @@ class SecurityTestCase(SecurityTestCaseBase):
     id: int
 
     class Config:
-        from_attributes = True  # Pydantic v2 syntax
+        from_attributes = True
 
 class DomainRequest(BaseModel):
     domain: str
 
+
+class CollectionBase(BaseModel):
+    name: str
+    api_endpoints: Optional[List[str]] = None
+
+class CollectionCreate(CollectionBase):
+    pass
+
+class Collection(CollectionBase):
+    collection_id: int
+
+    class Config:
+        from_attributes = True
+
+class SecurityResultBase(BaseModel):
+    sqli: bool
+    bola: bool
+    test_3: bool
+    test_4: bool
+    test_5: bool
+
+class SecurityResultCreate(SecurityResultBase):
+    pass
+
+class SecurityResult(SecurityResultBase):
+    result_id: int
+
+    class Config:
+        from_attributes = True
+
+class AssessmentBase(BaseModel):
+    timestamp: str
+    collection_id: int
+    result_id: int
+
+class AssessmentCreate(AssessmentBase):
+    pass
+
+class Assessment(AssessmentBase):
+    assessment_id: int
+
+    class Config:
+        from_attributes = True

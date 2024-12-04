@@ -7,11 +7,11 @@ from datetime import datetime, timedelta, timezone
 from jose import JWTError, jwt
 import os
 from dotenv import load_dotenv
-from backend import crud, models, schemas
-from backend.database import SessionLocal, engine
+import crud, models, schemas
+from database import SessionLocal, engine
 from typing import Union
-from backend.securityTesting import sqlinjection, bola
-from backend.reconTool.extractor import run_crawler
+from securityTesting import sqlinjection, bola
+from reconTool.extractor import run_crawler
 
 # openssl rand -hex 32
 SECRET_KEY = os.getenv("SECRET_KEY")

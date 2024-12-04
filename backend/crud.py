@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from . import models, schemas
+import models, schemas
 from passlib.context import CryptContext
 """
 The functions in this file are used to interact with the database.
@@ -64,3 +64,29 @@ def get_security_test_cases(db: Session, skip: int = 0, limit: int = 100):
 
 def get_security_test_cases_by_name(db: Session, name: str):
     return db.query(models.SecurityTestCase).filter(models.SecurityTestCase.name == name).first()
+
+
+
+
+def create_collection(db: Session, name: str, api_endpoints: dict):
+    db_collection = models.Collection(name=name, api_endpoints=api_endpoints)
+    db.add(db_collection)
+    db.commit()
+    db.refresh(db_collection)
+    return db_collection
+
+def create_security_result(db: Session, test_1: bool, test_2: bool, test_3: bool, test_4: bool, test_5: bool):
+    db_result = models.SecurityResult(
+        test_1=test_1, test_2=test_2, test_3=test_3, test_4=test_4, test_5=test_5
+    )
+    db.add(db_result)
+    db.commit()
+    db.refresh(db_result)
+    return db_result
+
+def create_assessment(db: Session, collection_id: int, result_id: int):
+    db_assessment = models.Assessment(collection_id=collection_id, result_id=result_id)
+    db.add(db_assessment)
+    db.commit()
+    db.refresh(db_assessment)
+    return db_assessment
