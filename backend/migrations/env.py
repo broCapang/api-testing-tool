@@ -6,13 +6,13 @@ from sqlmodel import SQLModel
 from alembic import context
 from database import Base
 from models import User, SecurityTestCase
-
+import os
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
-
-config.set_main_option("sqlalchemy.url", "postgresql://fastapi:fastapi@localhost/api-testing-tool")
+DB_PATH = os.getenv("DATABASE_URL")
+config.set_main_option("sqlalchemy.url", DB_PATH)
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
 if config.config_file_name is not None:
