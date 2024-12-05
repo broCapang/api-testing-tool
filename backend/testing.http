@@ -57,3 +57,13 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJpcmZhbiIsI
   "url": "http://localhost:5000/users/v1/",
   "id": "14"
 }
+
+
+### test crawler
+POST http://localhost:8000/crawl 
+Content-Type: application/json
+
+{
+  "domain": "https://open.dosm.gov.my/",
+  "name": "My Collection Name"
+}

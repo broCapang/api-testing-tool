@@ -39,6 +39,7 @@ class SecurityTestCase(SecurityTestCaseBase):
 
 class DomainRequest(BaseModel):
     domain: str
+    name: str
 
 
 class CollectionBase(BaseModel):

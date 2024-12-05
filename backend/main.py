@@ -197,15 +197,30 @@ async def sql_injection(
     return {"result": id, "url": url}
 
 @app.post("/crawl")
-async def crawl(domain_request: schemas.DomainRequest):
+async def crawl(domain_request: schemas.DomainRequest, db: Session = Depends(get_db)):
     try:
         # Call the existing run_crawler function with the domain from the request
         result = await run_crawler(domain_request.domain)
-        # Extract crawled URLs from the result and return them
-        return {"api_endpoints": result["api_endpoints"]}
+
+        # Extract crawled URLs from the result
+        api_endpoints = result.get("api_endpoints", [])
+
+        # Create and store a new collection in the database
+        collection_data = schemas.CollectionCreate(name=domain_request.name, api_endpoints=api_endpoints)
+        new_collection = crud.create_collection(db=db, collection=collection_data)
+
+        # Return the crawled URLs along with the stored collection info
+        return {"name": new_collection.name, "api_endpoints": api_endpoints}
+    
     except ValueError as e:
         # Handle invalid domain error
         raise HTTPException(status_code=400, detail=f"Invalid domain: {str(e)}")
     except Exception as e:
         # Handle any other errors
         raise HTTPException(status_code=500, detail="Internal Server Error")
+
+
+@app.get("/collections/", response_model=List[schemas.Collection])
+def get_collections(db: Session = Depends(get_db)):
+    collections = crud.get_collections(db=db)
+    return collections

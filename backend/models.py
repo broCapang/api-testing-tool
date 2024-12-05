@@ -35,8 +35,6 @@ class Collection(Base):
 
     # Relationship to Assessment and SecurityResult
     assessments = relationship("Assessment", back_populates="collection")
-    security_results = relationship("Assessment", back_populates="security_result")
-
 # SecurityResult Model
 class SecurityResult(Base):
     __tablename__ = "security_result"

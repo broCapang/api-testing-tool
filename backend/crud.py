@@ -68,16 +68,22 @@ def get_security_test_cases_by_name(db: Session, name: str):
 
 
 
-def create_collection(db: Session, name: str, api_endpoints: dict):
-    db_collection = models.Collection(name=name, api_endpoints=api_endpoints)
+def create_collection(db: Session, collection: schemas.CollectionBase):
+    db_collection = models.Collection(
+        name=collection.name,
+        api_endpoints=collection.api_endpoints
+    )
     db.add(db_collection)
     db.commit()
     db.refresh(db_collection)
     return db_collection
 
-def create_security_result(db: Session, test_1: bool, test_2: bool, test_3: bool, test_4: bool, test_5: bool):
+def get_collections(db: Session):
+    return db.query(models.Collection).all()
+
+def create_security_result(db: Session, sqli: bool, bola: bool, test_3: bool, test_4: bool, test_5: bool):
     db_result = models.SecurityResult(
-        test_1=test_1, test_2=test_2, test_3=test_3, test_4=test_4, test_5=test_5
+        sqli=sqli, bola=bola, test_3=test_3, test_4=test_4, test_5=test_5
     )
     db.add(db_result)
     db.commit()
