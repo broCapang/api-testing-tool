@@ -29,6 +29,9 @@ function Header() {
                             <li>
                                 <a href="/addTest" className="block py-2 px-3 rounded md:hover:bg-transparent md:hover:text-blue-700 md:p-0 md:dark:hover:text-blue-500 text-white hover:bg-gray-700 hover:text-white border-gray-700" aria-current="page">Testing</a>
                             </li>
+                            <li>
+                                <a href="/discover" className="block py-2 px-3 rounded md:hover:bg-transparent md:hover:text-blue-700 md:p-0 md:dark:hover:text-blue-500 text-white hover:bg-gray-700 hover:text-white border-gray-700" aria-current="page">Discover</a>
+                            </li>
                         </ul>
                     </div>
                     <div className="flex md:order-2 space-x-3 md:space-x-0 rtl:space-x-reverse">

@@ -15,40 +15,78 @@ const Profile = () => {
     const [email, setEmail] = useState('');
     const [fullname, setFullname] = useState('');
     const [password, setPassword] = useState('');
-
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [successMessage, setSuccessMessage] = useState(null);
     const navigate = useNavigate();
-
+  
+    // Fetch the user profile information
     useEffect(() => {
-        const fetchProfile = async () => {
-            const storedToken = localStorage.getItem('access_token');
-            if (!storedToken) {
-                navigate('/login');
-                return;
-            }
-            try {
-                const response = await fetch('http://localhost:8000/user/profile/', {
-                    headers: {
-                        'Authorization': `Bearer ${storedToken}`,
-                    },
-                });
-                if (!response.ok) {
-                    throw new Error('Token verification failed');
-                }
-                response.json().then(data => {
-                    setUsername(data.username);
-                    setEmail(data.email);
-                    if (data.full_name){
-                        setFullname(data.full_name);
-                    }
-                    console.log(data);
-                });
-            } catch (error) {
-                localStorage.removeItem('access_token');
-                navigate('/login');
-            }
+      const fetchProfile = async () => {
+        const storedToken = localStorage.getItem('access_token');
+        if (!storedToken) {
+          navigate('/login');
+          return;
         }
-        fetchProfile();
-    }, [navigate, username, email, fullname, password]);
+        try {
+          const response = await fetch('http://localhost:8000/user/profile/', {
+            headers: {
+              'Authorization': `Bearer ${storedToken}`,
+            },
+          });
+          if (!response.ok) {
+            throw new Error('Failed to fetch profile');
+          }
+          const data = await response.json();
+          setUsername(data.username);
+          setEmail(data.email);
+          setFullname(data.full_name || '');
+          setLoading(false);
+        } catch (error) {
+          setError('Failed to fetch profile information');
+          localStorage.removeItem('access_token');
+          navigate('/login');
+        }
+      };
+      fetchProfile();
+    }, [navigate]);
+  
+    const handleSubmit = async (e) => {
+      e.preventDefault();
+      setError(null);
+      setSuccessMessage(null);
+  
+      // Validation
+      if (!username || !email || !password) {
+        setError('All fields are required');
+        return;
+      }
+  
+      setLoading(true);
+  
+      const storedToken = localStorage.getItem('access_token');
+      try {
+        const response = await fetch('http://localhost:8000/user/profile/update/', {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${storedToken}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ username, email, full_name: fullname, password }),
+        });
+  
+        if (!response.ok) {
+          throw new Error('Failed to update profile');
+        }
+  
+        setSuccessMessage('Profile updated successfully');
+      } catch (error) {
+        setError('Failed to update profile');
+      } finally {
+        setLoading(false);
+      }
+    };
+  
 
     return (
         <Container maxWidth="sm" className="justify-center h-screen content-center">

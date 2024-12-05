@@ -12,6 +12,7 @@ import Profile from './pages/Profile';
 import AddTest from './pages/AddTest';
 import RunTest from './pages/RunTest';
 import Dashboard from './views/dashboard';
+import Discover from './pages/Discover';
 
 function App() {
     useEffect(() => {
@@ -46,6 +47,12 @@ function App() {
                             <RunTest />
                         </AuthWrapper>
                     } />
+                    <Route path="/discover" element={
+                        <AuthWrapper>
+                            <Discover />
+                        </AuthWrapper>
+                    } />
+                    
 
                 </Routes>
             </Router>
