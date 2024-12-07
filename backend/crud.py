@@ -81,6 +81,9 @@ def create_collection(db: Session, collection: schemas.CollectionBase):
 def get_collections(db: Session):
     return db.query(models.Collection).all()
 
+def get_collection_by_id(db: Session, collection_id: int):
+    return db.query(models.Collection).filter(models.Collection.collection_id == collection_id).first()
+
 def create_security_result(db: Session, sqli: bool, bola: bool, test_3: bool, test_4: bool, test_5: bool):
     db_result = models.SecurityResult(
         sqli=sqli, bola=bola, test_3=test_3, test_4=test_4, test_5=test_5

@@ -27,7 +27,7 @@ def crawl_website(base_url):
     visited_urls = set()
     failed_urls = set()
     urls_to_crawl = [base_url]
-
+    i = 0
     start_time = time.time()
     print("Starting crawl...")
     with tqdm(desc="Crawling") as pbar:
@@ -65,6 +65,9 @@ def crawl_website(base_url):
                 # print(f"Failed to fetch {current_url}: {e}")
 
             pbar.update(1)
+            i+=1
+            if i == 30:
+                break
 
     # print(f"Crawled {len(visited_urls)} URLs in {time.time() - start_time:.2f} seconds.")
     return list(visited_urls)

@@ -13,6 +13,7 @@ import AddTest from './pages/AddTest';
 import RunTest from './pages/RunTest';
 import Dashboard from './views/dashboard';
 import Discover from './pages/Discover';
+import CollectionsPage from './pages/CollectionPage';
 
 function App() {
     useEffect(() => {
@@ -50,6 +51,11 @@ function App() {
                     <Route path="/discover" element={
                         <AuthWrapper>
                             <Discover />
+                        </AuthWrapper>
+                    } />
+                    <Route path="/collections" element={
+                        <AuthWrapper>
+                            <CollectionsPage />
                         </AuthWrapper>
                     } />
                     

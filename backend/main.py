@@ -173,28 +173,59 @@ def read_security_test_case(
     return db_security_test_case
 
 @app.post("/security/runTest/")
-async def sql_injection(
+async def run_security_test(
     request: Request,
     token_data: schemas.TokenData = Depends(verify_token),
     db: Session = Depends(get_db)
-    ):
+):
     body = await request.json()
-    url = body.get("url")
-    id = body.get("id")
+    collection_id = body.get("collection_id")
+    securitytest_id = body.get("securitytest_id")
 
-    db_security_test_case = crud.get_security_test_case(db, security_test_case_id=id)
+    # Validate input
+    if collection_id is None or securitytest_id is None:
+        raise HTTPException(status_code=400, detail="collection_id and securitytest_id are required")
+
+    # Fetch the test case
+    db_security_test_case = crud.get_security_test_case(db, security_test_case_id=securitytest_id)
     if db_security_test_case is None:
         raise HTTPException(status_code=404, detail="Security test case not found")
-    
-    if db_security_test_case.id == 14:
-        result = sqlinjection.sql_injection(url, db_security_test_case.payload)
-        return {"result": result, "url": url}
-    if db_security_test_case.id == 17:
-        result = bola.bola(url, db_security_test_case.payload)
-        return {"result": result, "url": url}
 
+    # Fetch the collection
+    db_collection = crud.get_collection_by_id(db,collection_id=collection_id)
+    if db_collection is None:
+        raise HTTPException(status_code=404, detail="Collection not found")
 
-    return {"result": id, "url": url}
+    # Extract endpoints from the collection
+    endpoints = db_collection.api_endpoints
+    if not endpoints or not isinstance(endpoints, list):
+        raise HTTPException(status_code=400, detail="No valid endpoints found in the collection")
+
+    # Prepare results list
+    test_results = []
+
+    # Run the test against each endpoint in the collection
+    for endpoint in endpoints:
+        if db_security_test_case.id == 14:
+            result = sqlinjection.sql_injection(endpoint, db_security_test_case.payload)
+        elif db_security_test_case.id == 17:
+            result = bola.bola(endpoint, db_security_test_case.payload)
+        else:
+            # For future tests or unknown test case IDs
+            result = {"endpoint": endpoint, "status": "No test implemented"}
+
+        # Append results to the list
+        test_results.append({
+            "endpoint": endpoint,
+            "test_case_id": db_security_test_case.id,
+            "result": result
+        })
+
+    return {
+        "collection_id": collection_id,
+        "securitytest_id": securitytest_id,
+        "results": test_results
+    }
 
 @app.post("/crawl")
 async def crawl(domain_request: schemas.DomainRequest, db: Session = Depends(get_db)):
@@ -224,3 +255,11 @@ async def crawl(domain_request: schemas.DomainRequest, db: Session = Depends(get
 def get_collections(db: Session = Depends(get_db)):
     collections = crud.get_collections(db=db)
     return collections
+
+
+@app.get("/collections/{collection_id}", response_model=schemas.Collection)
+def get_collection_by_id(collection_id: int, db: Session = Depends(get_db)):
+    collection = crud.get_collection_by_id(db=db, collection_id=collection_id)
+    if collection is None:
+        raise HTTPException(status_code=404, detail="Collection not found")
+    return collection

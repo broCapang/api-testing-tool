@@ -27,7 +27,7 @@ function Header() {
                                 <a href="/profile" className="block py-2 px-3 rounded md:hover:bg-transparent md:hover:text-blue-700 md:p-0 md:dark:hover:text-blue-500 text-white hover:bg-gray-700 hover:text-white border-gray-700" aria-current="page">Profile</a>
                             </li>
                             <li>
-                                <a href="/addTest" className="block py-2 px-3 rounded md:hover:bg-transparent md:hover:text-blue-700 md:p-0 md:dark:hover:text-blue-500 text-white hover:bg-gray-700 hover:text-white border-gray-700" aria-current="page">Testing</a>
+                                <a href="/collections" className="block py-2 px-3 rounded md:hover:bg-transparent md:hover:text-blue-700 md:p-0 md:dark:hover:text-blue-500 text-white hover:bg-gray-700 hover:text-white border-gray-700" aria-current="page">Collections</a>
                             </li>
                             <li>
                                 <a href="/discover" className="block py-2 px-3 rounded md:hover:bg-transparent md:hover:text-blue-700 md:p-0 md:dark:hover:text-blue-500 text-white hover:bg-gray-700 hover:text-white border-gray-700" aria-current="page">Discover</a>

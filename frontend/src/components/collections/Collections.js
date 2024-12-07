@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Grid, Paper, Typography, CircularProgress, Card, CardContent, CardActions, Button } from '@mui/material';
+import { Grid, Card, CardContent, CardActions, Typography, Button, CircularProgress } from '@mui/material';
 
-const Collections = () => {
+const Collections = ({ onViewCollection }) => {
   const [collections, setCollections] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Fetch collections from the backend
   useEffect(() => {
     const fetchCollections = async () => {
       try {
@@ -36,7 +35,7 @@ const Collections = () => {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-screen">
+      <div className="flex justify-center items-center h-full">
         <CircularProgress />
       </div>
     );
@@ -44,11 +43,9 @@ const Collections = () => {
 
   if (error) {
     return (
-      <div className="flex justify-center items-center h-screen">
-        <Typography variant="h6" color="error">
-          Error: {error}
-        </Typography>
-      </div>
+      <Typography variant="h6" color="error">
+        Error: {error}
+      </Typography>
     );
   }
 
@@ -66,7 +63,7 @@ const Collections = () => {
               </Typography>
             </CardContent>
             <CardActions>
-              <Button size="small" color="primary" onClick={() => handleViewCollection(collection.collection_id)}>
+              <Button size="small" color="primary" onClick={() => onViewCollection(collection.collection_id)}>
                 View Details
               </Button>
             </CardActions>
@@ -75,11 +72,6 @@ const Collections = () => {
       ))}
     </Grid>
   );
-
-  function handleViewCollection(collectionId) {
-    console.log(`View details for collection ${collectionId}`);
-    // Redirect to another page or show details
-  }
 };
 
 export default Collections;
