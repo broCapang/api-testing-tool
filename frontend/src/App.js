@@ -14,54 +14,68 @@ import RunTest from './pages/RunTest';
 import Dashboard from './views/dashboard';
 import Discover from './pages/Discover';
 import CollectionsPage from './pages/CollectionPage';
+import CollectionDetailPage from './pages/CollectionDetailPage';
+import AssessmentsPage from './pages/AssessmentsPage';
 
 function App() {
     useEffect(() => {
         document.title = 'DataShield';
-      }, []);
-    
-    return (
-        
-            <Router>
-                <Header />
-                <Routes>
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/logout" element={<Logout />} />
-                    <Route path="/register" element={<Register />} />
-                    <Route path="/" element={
-                        <AuthWrapper>
-                            <Dashboard />
-                        </AuthWrapper>
-                    } />
-                    <Route path="/profile" element={
-                        <AuthWrapper>
-                            <Profile />
-                        </AuthWrapper>
-                    } />
-                    <Route path="/addTest" element={
-                        <AuthWrapper>
-                            <AddTest />
-                        </AuthWrapper>
-                    } />
-                    <Route path="/runTest" element={
-                        <AuthWrapper>
-                            <RunTest />
-                        </AuthWrapper>
-                    } />
-                    <Route path="/discover" element={
-                        <AuthWrapper>
-                            <Discover />
-                        </AuthWrapper>
-                    } />
-                    <Route path="/collections" element={
-                        <AuthWrapper>
-                            <CollectionsPage />
-                        </AuthWrapper>
-                    } />
-                    
+    }, []);
 
-                </Routes>
-            </Router>
+    return (
+
+        <Router>
+            <Header />
+            <Routes>
+                <Route path="/login" element={<Login />} />
+                <Route path="/logout" element={<Logout />} />
+                <Route path="/register" element={<Register />} />
+                <Route path="/" element={
+                    <AuthWrapper>
+                        <Dashboard />
+                    </AuthWrapper>
+                } />
+                {/* Page to show the details of a single collection */}
+                <Route path="/collection/:collectionId" element={
+                    <AuthWrapper>
+                        <CollectionDetailPage />
+                    </AuthWrapper>
+                } />
+
+                {/* Page to show the assessments for a given collection */}
+                <Route path="/assessments/:collectionId" element={
+                    <AuthWrapper>
+                        <AssessmentsPage />
+                    </AuthWrapper>} />
+                <Route path="/profile" element={
+                    <AuthWrapper>
+                        <Profile />
+                    </AuthWrapper>
+                } />
+                <Route path="/addTest" element={
+                    <AuthWrapper>
+                        <AddTest />
+                    </AuthWrapper>
+                } />
+                <Route path="/runTest" element={
+                    <AuthWrapper>
+                        <RunTest />
+                    </AuthWrapper>
+                } />
+                <Route path="/discover" element={
+                    <AuthWrapper>
+                        <Discover />
+                    </AuthWrapper>
+                } />
+                <Route path="/collections" element={
+                    <AuthWrapper>
+                        <CollectionsPage />
+                    </AuthWrapper>
+                } />
+
+
+            </Routes>
+        </Router>
 
     );
 }

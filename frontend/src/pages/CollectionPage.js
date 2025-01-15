@@ -1,27 +1,45 @@
 import React, { useState, useEffect } from 'react';
-import { Grid, Card, Container, CardContent, CardActions, Typography, Button, CircularProgress, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Radio, RadioGroup, FormControlLabel } from '@mui/material';
+import {
+  Container,
+  Grid,
+  Card,
+  CardContent,
+  CardActions,
+  Typography,
+  Button,
+  CircularProgress,
+  Snackbar,
+  Alert,
+  Box,
+} from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 
 const CollectionsPage = () => {
+  const navigate = useNavigate();
+
+  // -----------------------------
+  // State variables
+  // -----------------------------
   const [collections, setCollections] = useState([]);
   const [collectionsLoading, setCollectionsLoading] = useState(true);
   const [collectionsError, setCollectionsError] = useState(null);
 
-  const [selectedCollection, setSelectedCollection] = useState(null);
-  const [collectionModalOpen, setCollectionModalOpen] = useState(false);
-  const [loadingCollectionDetail, setLoadingCollectionDetail] = useState(false);
-  const [collectionDetailError, setCollectionDetailError] = useState(null);
+  // For delete notifications
+  const [deleteError, setDeleteError] = useState(null);
+  const [deleteSuccess, setDeleteSuccess] = useState(false);
 
-  const [runTestModalOpen, setRunTestModalOpen] = useState(false);
+  // For running tests
+  const [testLoading, setTestLoading] = useState(false);
+  const [testSuccess, setTestSuccess] = useState(false); // to show "Testing Done!"
   const [tests, setTests] = useState([]);
   const [testsLoading, setTestsLoading] = useState(true);
   const [testsError, setTestsError] = useState(null);
 
-  const [selectedTestCase, setSelectedTestCase] = useState('');
-  const [testUrl, setTestUrl] = useState('');
-
   const storedToken = localStorage.getItem('access_token');
 
-  // Fetch collections on load
+  // -----------------------------
+  // Fetch collections
+  // -----------------------------
   useEffect(() => {
     const fetchCollections = async () => {
       try {
@@ -29,7 +47,7 @@ const CollectionsPage = () => {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${storedToken}`,
+            Authorization: `Bearer ${storedToken}`,
           },
         });
 
@@ -49,24 +67,27 @@ const CollectionsPage = () => {
     fetchCollections();
   }, [storedToken]);
 
-  // Fetch test cases on load (so they're ready when user wants to run a test)
+  // -----------------------------
+  // Fetch security test cases
+  // -----------------------------
   useEffect(() => {
     const fetchTests = async () => {
+      setTestsLoading(true);
+      setTestsError(null);
       try {
-        const response = await fetch('http://localhost:8000/security/security_test_cases/', {
-          headers: {
-            'Authorization': `Bearer ${storedToken}`,
-          },
-        });
+        const response = await fetch(
+          'http://localhost:8000/security/security_test_cases/',
+          {
+            headers: {
+              Authorization: `Bearer ${storedToken}`,
+            },
+          }
+        );
         if (!response.ok) {
-          throw new Error('Failed to fetch test cases');
+          throw new Error('Failed to fetch security test cases');
         }
         const data = await response.json();
-        if (Array.isArray(data)) {
-          setTests(data);
-        } else {
-          console.error('Unexpected response format:', data);
-        }
+        setTests(data);
       } catch (error) {
         setTestsError(error.message);
       } finally {
@@ -77,142 +98,204 @@ const CollectionsPage = () => {
     fetchTests();
   }, [storedToken]);
 
-  const handleViewCollection = async (collectionId) => {
-    setLoadingCollectionDetail(true);
-    setCollectionDetailError(null);
-    setSelectedCollection(null);
+  // -----------------------------
+  // Delete a collection
+  // -----------------------------
+  const handleDeleteCollection = async (collectionId) => {
+    if (!window.confirm('Are you sure you want to delete this collection?')) {
+      return;
+    }
 
     try {
-      const response = await fetch(`http://localhost:8000/collections/${collectionId}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${storedToken}`,
-        },
-      });
+      const response = await fetch(
+        `http://localhost:8000/collections/${collectionId}`,
+        {
+          method: 'DELETE',
+          headers: {
+            Authorization: `Bearer ${storedToken}`,
+          },
+        }
+      );
 
       if (!response.ok) {
-        throw new Error('Failed to fetch collection details');
+        throw new Error('Failed to delete the collection');
       }
 
-      const data = await response.json();
-      setSelectedCollection(data);
-      setCollectionModalOpen(true);
-    } catch (err) {
-      console.error('Error fetching collection details:', err.message);
-      setCollectionDetailError(err.message);
-    } finally {
-      setLoadingCollectionDetail(false);
+      // Remove from local state
+      setCollections((prevCollections) =>
+        prevCollections.filter(
+          (collection) => collection.collection_id !== collectionId
+        )
+      );
+      setDeleteSuccess(true);
+    } catch (error) {
+      setDeleteError(error.message);
     }
   };
 
-  const handleCloseCollectionModal = () => {
-    setCollectionModalOpen(false);
-    setSelectedCollection(null);
+  // -----------------------------
+  // Navigate to "Assessments" page
+  // -----------------------------
+  const handleViewAssessments = (collectionId) => {
+    navigate(`/assessments/${collectionId}`);
   };
 
-  const handleOpenRunTestModal = (collectionId) => {
-    // Reset run test form fields
-    setSelectedTestCase('');
-    setTestUrl('');
-
-    // We could store the collectionId if needed for any reason, but the runTest endpoint may not require it.
-    // If the runTest endpoint requires a collection ID, you can store it in state as well:
-    // setCurrentCollectionId(collectionId);
-
-    setRunTestModalOpen(true);
+  // -----------------------------
+  // Navigate to "Collection Detail" page
+  // -----------------------------
+  const handleViewCollection = (collectionId) => {
+    navigate(`/collection/${collectionId}`);
   };
 
-  const handleCloseRunTestModal = () => {
-    setRunTestModalOpen(false);
+  // -----------------------------
+  // Run Test (All tests)
+  // -----------------------------
+  const handleRunTest = async (collectionId) => {
+    // Set the test loading spinner
+    setTestLoading(true);
+    setTestSuccess(false); // reset any prior success state
+
+    try {
+      const response = await fetch('http://localhost:8000/security/runAllTests/', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${storedToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          collection_id: collectionId,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to run all security tests');
+      }
+
+      const data = await response.json();
+      console.log('Test results:', data);
+
+      // Show success snackbar
+      setTestSuccess(true);
+    } catch (error) {
+      console.error('Error running test:', error);
+      alert('Error running test: ' + error.message);
+    } finally {
+      // Turn off spinner
+      setTestLoading(false);
+    }
   };
 
-  const handleRunTestSubmit = async (e) => {
-    // e.preventDefault();
-    // if (!selectedTestCaseId || !selectedCollectionId) {
-    //   alert('Please select a test case and a collection.');
-    //   return;
-    // }
-  
-    // try {
-    //   const response = await fetch('http://localhost:8000/security/runTest/', {
-    //     method: 'POST',
-    //     headers: {
-    //       'Authorization': `Bearer ${storedToken}`,
-    //       'Content-Type': 'application/json',
-    //     },
-    //     body: JSON.stringify({
-    //       collection_id: selectedCollectionId,
-    //       securitytest_id: selectedTestCaseId
-    //     }),
-    //   });
-      
-    //   if (!response.ok) {
-    //     console.log(response);
-    //     throw new Error('Failed to run test');
-    //   }
-  
-    //   const data = await response.json();
-    //   console.log(data);
-  
-    //   // Based on the returned results, handle UI updates or alerts
-    //   // The structure: data.results = [{endpoint, test_case_id, result}, ...]
-    //   // 'result' may have a structure indicating vulnerability.
-    //   // Adjust alert logic based on how 'result' is structured.
-  
-    //   const anyVulnerable = data.results.some(r => r.result && r.result.vulnerable);
-    //   if (anyVulnerable) {
-    //     alert(`Some endpoints are vulnerable.`);
-    //   } else {
-    //     alert('No vulnerabilities found in the tested endpoints.');
-    //   }
-  
-    // } catch (error) {
-    //   console.error("Error running test:", error);
-    //   alert("Error running test: " + error.message);
-    // }
+  // -----------------------------
+  // Close any open snackbar
+  // -----------------------------
+  const handleSnackbarClose = () => {
+    setDeleteError(null);
+    setDeleteSuccess(false);
+    setTestSuccess(false);
   };
-  
 
+  // -----------------------------
+  // Render
+  // -----------------------------
   if (collectionsLoading) {
     return (
-      <div className="flex justify-center items-center h-full">
+      <Box
+        sx={{
+          minHeight: '100vh',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          backgroundColor: '#f0f2f5',
+        }}
+      >
         <CircularProgress />
-      </div>
+      </Box>
     );
   }
 
   if (collectionsError) {
     return (
-      <Typography variant="h6" color="error">
+      <Typography variant="h6" color="error" sx={{ mt: 4, textAlign: 'center' }}>
         Error: {collectionsError}
       </Typography>
     );
   }
 
   return (
-    <Container maxWidth="lg" sx={{ py: 15 }} className='h-screen items-center justify-center'>
-      <Typography variant="h5" sx={{ mb: 4, color: 'white' }}>
+    <Container
+      maxWidth="lg"
+      sx={{
+        py: 12,
+        minHeight: '100vh',
+      }}
+    >
+      <Typography
+        variant="h4"
+        color="white"
+        sx={{ mb: 4, fontWeight: 'bold', textAlign: 'center' }}
+      >
         Available Collections
       </Typography>
-      <Grid container spacing={4}>
+
+      <Grid container spacing={3}>
         {collections.map((collection) => (
-          <Grid item xs={12} sm={6} md={4} key={collection.collection_id}>
-            <Card className="rounded-lg shadow-lg">
+          <Grid item xs={12} sm={6} md={6} key={collection.collection_id}>
+            <Card
+              sx={{
+                borderRadius: 2,
+                boxShadow: 3,
+                transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+                '&:hover': {
+                  transform: 'scale(1.02)',
+                  boxShadow: 6,
+                },
+              }}
+            >
               <CardContent>
-                <Typography variant="h6" color="textPrimary" className="font-semibold">
+                <Typography variant="h6" fontWeight="bold" gutterBottom>
                   {collection.name}
                 </Typography>
-                <Typography variant="body2" color="textSecondary" className="mt-2">
+                <Typography variant="body2" color="text.secondary">
                   {collection.api_endpoints.length} API Endpoints
                 </Typography>
               </CardContent>
-              <CardActions>
-                <Button size="small" color="primary" onClick={() => handleViewCollection(collection.collection_id)}>
+
+              <CardActions sx={{ justifyContent: 'space-between', px: 2 }}>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  onClick={() => handleViewAssessments(collection.collection_id)}
+                >
+                  View Assessments
+                </Button>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  onClick={() => handleViewCollection(collection.collection_id)}
+                >
                   View Collection
                 </Button>
-                <Button size="small" color="secondary" onClick={() => handleOpenRunTestModal(collection.collection_id)}>
-                  Run Test
+                {/* Run Test button */}
+                <Button
+                  size="small"
+                  variant="outlined"
+                  color="success"
+                  onClick={() => handleRunTest(collection.collection_id)}
+                  disabled={testLoading} // disable if test is running
+                >
+                  {testLoading ? (
+                    <CircularProgress size={18} />
+                  ) : (
+                    'Run Test'
+                  )}
+                </Button>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  color="error"
+                  onClick={() => handleDeleteCollection(collection.collection_id)}
+                >
+                  Delete
                 </Button>
               </CardActions>
             </Card>
@@ -220,80 +303,36 @@ const CollectionsPage = () => {
         ))}
       </Grid>
 
-      {/* Collection Details Modal */}
-      <Dialog open={collectionModalOpen} onClose={handleCloseCollectionModal} maxWidth="md" fullWidth>
-        <DialogTitle>Collection Details</DialogTitle>
-        <DialogContent>
-          {loadingCollectionDetail && <CircularProgress />}
-          {collectionDetailError && <Typography color="error">Error: {collectionDetailError}</Typography>}
-          {selectedCollection && !loadingCollectionDetail && (
-            <>
-              <Typography variant="h6">{selectedCollection.name}</Typography>
-              <Typography variant="subtitle1">Collection ID: {selectedCollection.collection_id}</Typography>
-              <Typography variant="body1">
-                Number of API endpoints: {selectedCollection.api_endpoints.length}
-              </Typography>
+      {/* Snackbar for Deletion Errors/Success */}
+      <Snackbar
+        open={!!deleteError}
+        autoHideDuration={6000}
+        onClose={handleSnackbarClose}
+      >
+        <Alert onClose={handleSnackbarClose} severity="error">
+          {deleteError}
+        </Alert>
+      </Snackbar>
+      <Snackbar
+        open={deleteSuccess}
+        autoHideDuration={6000}
+        onClose={handleSnackbarClose}
+      >
+        <Alert onClose={handleSnackbarClose} severity="success">
+          Collection deleted successfully!
+        </Alert>
+      </Snackbar>
 
-              <Typography variant="h6" sx={{ mt: 2 }}>API Endpoints</Typography>
-              {selectedCollection.api_endpoints.length > 0 ? (
-                <ul>
-                  {selectedCollection.api_endpoints.map((endpoint, index) => (
-                    <li key={index}>{endpoint}</li>
-                  ))}
-                </ul>
-              ) : (
-                <Typography variant="body2">No endpoints found.</Typography>
-              )}
-            </>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseCollectionModal} color="primary">
-            Close
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Run Test Modal */}
-      <Dialog open={runTestModalOpen} onClose={handleCloseRunTestModal} maxWidth="sm" fullWidth>
-        <DialogTitle>Run Test</DialogTitle>
-        <DialogContent>
-          {testsLoading && <CircularProgress />}
-          {testsError && <Typography color="error">Error: {testsError}</Typography>}
-          {!testsLoading && !testsError && (
-            <form onSubmit={handleRunTestSubmit} id="runTestForm">
-              <Typography variant="body1" sx={{ mt: 2 }}>
-                Select Test Type:
-              </Typography>
-              <RadioGroup
-                value={selectedTestCase}
-                onChange={(e) => setSelectedTestCase(e.target.value)}
-              >
-                {tests.map((testCase) => (
-                  <FormControlLabel
-                    key={testCase.id}
-                    value={testCase.id.toString()}
-                    control={<Radio required />}
-                    label={
-                      <span>
-                        <strong>{testCase.name}</strong>: {testCase.description}
-                      </span>
-                    }
-                  />
-                ))}
-              </RadioGroup>
-            </form>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseRunTestModal} color="error">
-            Cancel
-          </Button>
-          <Button type="submit" form="runTestForm" color="primary">
-            Run Test
-          </Button>
-        </DialogActions>
-      </Dialog>
+      {/* Snackbar for Test Completion */}
+      <Snackbar
+        open={testSuccess}
+        autoHideDuration={4000}
+        onClose={handleSnackbarClose}
+      >
+        <Alert onClose={handleSnackbarClose} severity="success">
+          Testing Done!
+        </Alert>
+      </Snackbar>
     </Container>
   );
 };
