@@ -67,3 +67,26 @@ Content-Type: application/json
   "domain": "https://open.dosm.gov.my/",
   "name": "My Collection Name"
 }
+
+
+### Delete API Collection
+DELETE http://localhost:8000/collections/15
+
+
+### Run All Security Tests
+POST http://localhost:8000/security/runAllTests/
+Content-Type: application/json  
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjYXBhbmciLCJleHAiOjE3MzY4OTE2OTZ9.MQfzPrQoaJklpkdcCuqfrg-Xa7N4fBSQPZjha_sBndg
+
+{
+  "collection_id": 11
+}
+
+
+### Get Results
+GET http://localhost:8000/results/12
+Content-Type: application/json  
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjYXBhbmciLCJleHAiOjE3MzY4OTE2OTZ9.MQfzPrQoaJklpkdcCuqfrg-Xa7N4fBSQPZjha_sBndg
+
+
+

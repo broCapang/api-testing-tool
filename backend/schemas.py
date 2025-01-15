@@ -1,6 +1,9 @@
 from typing import Optional, List
 from pydantic import BaseModel
 
+#
+# Authentication Schemas
+#
 class Token(BaseModel):
     access_token: str
     token_type: str
@@ -8,11 +11,13 @@ class Token(BaseModel):
 class TokenData(BaseModel):
     username: Optional[str] = None
 
+#
+# User Schemas
+#
 class UserBase(BaseModel):
     username: str
     email: str
     full_name: Optional[str] = None
-
 
 class UserCreate(UserBase):
     password: str
@@ -22,10 +27,12 @@ class User(UserBase):
     hashed_password: str
     disabled: Optional[bool] = None
 
-
     class Config:
         from_attributes = True
 
+#
+# SecurityTestCase Schemas
+#
 class SecurityTestCaseBase(BaseModel):
     name: str
     description: Optional[str] = None
@@ -37,11 +44,9 @@ class SecurityTestCase(SecurityTestCaseBase):
     class Config:
         from_attributes = True
 
-class DomainRequest(BaseModel):
-    domain: str
-    name: str
-
-
+#
+# Collection Schemas
+#
 class CollectionBase(BaseModel):
     name: str
     api_endpoints: Optional[List[str]] = None
@@ -55,26 +60,42 @@ class Collection(CollectionBase):
     class Config:
         from_attributes = True
 
+#
+# SecurityResult Schemas
+#
 class SecurityResultBase(BaseModel):
-    sqli: bool
-    bola: bool
-    test_3: bool
-    test_4: bool
-    test_5: bool
+    endpoint: str
+    test_3: bool = False
+    test_4: bool = False
+    test_5: bool = False
+    sqli: bool = False
+    bola: bool = False
+    assessment_id: int
+
 
 class SecurityResultCreate(SecurityResultBase):
     pass
 
 class SecurityResult(SecurityResultBase):
-    result_id: int
+    result_id: int  # This maps to 'result_id' in the DB, but we'll keep 'id' for Pydantic
 
     class Config:
         from_attributes = True
 
+class SecurityResultsByAssessment(BaseModel):
+    assessment_id: int
+    timestamp: Optional[str] = None
+    results: List[SecurityResult]
+
+    class Config:
+        from_attributes = True
+
+#
+# Assessment Schemas
+#
 class AssessmentBase(BaseModel):
-    timestamp: str
+    timestamp: Optional[str] = None
     collection_id: int
-    result_id: int
 
 class AssessmentCreate(AssessmentBase):
     pass
@@ -84,3 +105,10 @@ class Assessment(AssessmentBase):
 
     class Config:
         from_attributes = True
+
+#
+# Domain Request (Crawler)
+#
+class DomainRequest(BaseModel):
+    domain: str
+    name: str

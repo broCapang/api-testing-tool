@@ -1,6 +1,7 @@
 from sqlalchemy import Boolean, Column, Integer, String, JSON, ForeignKey
 from sqlalchemy.orm import relationship
 from database import Base
+from sqlalchemy.sql import func
 
 """
 This file defines the database models.
@@ -34,17 +35,20 @@ class Collection(Base):
     api_endpoints = Column(JSON)
 
     # Relationship to Assessment and SecurityResult
-    assessments = relationship("Assessment", back_populates="collection")
+    assessments = relationship("Assessment", back_populates="collection", cascade="all, delete-orphan")
+    
 # SecurityResult Model
 class SecurityResult(Base):
     __tablename__ = "security_result"
 
     result_id = Column(Integer, primary_key=True, index=True)
-    sqli = Column(Boolean, default=False)
-    bola = Column(Boolean, default=False)
+    endpoint = Column(String, nullable=False)
     test_3 = Column(Boolean, default=False)
     test_4 = Column(Boolean, default=False)
     test_5 = Column(Boolean, default=False)
+    sqli = Column(Boolean, default=False)
+    bola = Column(Boolean, default=False)
+    assessment_id = Column(Integer, ForeignKey("assessment.assessment_id"))
 
     # Relationship to Assessment
     assessments = relationship("Assessment", back_populates="security_result")
@@ -54,9 +58,8 @@ class Assessment(Base):
     __tablename__ = "assessment"
 
     assessment_id = Column(Integer, primary_key=True, index=True)
-    timestamp = Column(String, index=True)
+    timestamp = Column(String, server_default=func.now())
     collection_id = Column(Integer, ForeignKey("collection.collection_id"))
-    result_id = Column(Integer, ForeignKey("security_result.result_id"))
 
     # Relationships
     collection = relationship("Collection", back_populates="assessments")

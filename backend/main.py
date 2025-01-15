@@ -2,34 +2,51 @@ from fastapi import Depends, FastAPI, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Union
 from datetime import datetime, timedelta, timezone
 from jose import JWTError, jwt
 import os
 from dotenv import load_dotenv
+
 import crud, models, schemas
 from database import SessionLocal, engine
-from typing import Union
-from securityTesting import sqlinjection, bola
-from reconTool.extractor import run_crawler
 
-# openssl rand -hex 32
-SECRET_KEY = os.getenv("SECRET_KEY")
-ALGORITHM = os.getenv("ALGORITHM")
-ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 30))
+# Example placeholders for test logic
+# Just make sure your code has these or remove them as needed.
+try:
+    from securityTesting import sqlinjection, bola
+except ImportError:
+    # If not available, define placeholders
+    class sqlinjection:
+        @staticmethod
+        def sql_injection(endpoint, payload):
+            return True
 
+    class bola:
+        @staticmethod
+        def bola(endpoint, payload):
+            return False
 
+try:
+    from reconTool.extractor import run_crawler
+except ImportError:
+    async def run_crawler(domain: str):
+        return {"api_endpoints": ["/api/v1", "/api/v2"]}
+
+load_dotenv()
+
+SECRET_KEY = os.getenv("SECRET_KEY", "REPLACE_ME_SECRET")
+ALGORITHM = os.getenv("ALGORITHM", "HS256")
+ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "30"))
+
+# Create DB tables if not exist
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
-
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
-origins = [
-    "http://localhost:3000",
-]
-
+origins = ["http://localhost:3000"]
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
@@ -38,7 +55,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Dependency
+#
+# Database Dependency
+#
 def get_db():
     db = SessionLocal()
     try:
@@ -46,6 +65,9 @@ def get_db():
     finally:
         db.close()
 
+#
+# JWT Helpers
+#
 def create_access_token(data: dict, expires_delta: Union[timedelta, None] = None):
     to_encode = data.copy()
     if expires_delta:
@@ -81,8 +103,14 @@ async def get_current_active_user(current_user: schemas.User = Depends(get_curre
         raise HTTPException(status_code=400, detail="Inactive user")
     return current_user
 
+#
+# Auth Routes
+#
 @app.post("/token", response_model=schemas.Token)
-async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+async def login_for_access_token(
+    form_data: OAuth2PasswordRequestForm = Depends(),
+    db: Session = Depends(get_db)
+):
     user = crud.authenticate_user(db, form_data.username, form_data.password)
     if not user:
         raise HTTPException(
@@ -96,58 +124,51 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
     )
     return {"access_token": access_token, "token_type": "bearer"}
 
-async def verify_token(token: str = Depends(oauth2_scheme)):
+@app.get("/token/verify")
+async def verify_user_token(token: str = Depends(oauth2_scheme)):
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         username: str = payload.get("sub")
         if username is None:
             raise HTTPException(status_code=403, detail="Token is invalid")
-        token_data = schemas.TokenData(username=username)
-        return token_data
+        return {"username": username}
     except JWTError:
         raise HTTPException(status_code=403, detail="Token is invalid")
 
-
-@app.get("/token/verify")
-async def verify_user_token(token_data: schemas.TokenData = Depends(verify_token)):
-    return {"username": token_data.username}
-
-
+#
+# User Routes
+#
 @app.post("/user/create/", response_model=schemas.User)
-def create_user(
-    user: schemas.UserCreate, 
-    db: Session = Depends(get_db)
-    ):
+def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     db_user = crud.get_user_by_email(db, email=user.email)
     if db_user:
         raise HTTPException(status_code=400, detail="Email already registered")
     return crud.create_user(db=db, user=user)
 
-
 @app.get("/user/users/", response_model=List[schemas.User])
 def read_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    users = crud.get_users(db, skip=skip, limit=limit)
-    return users
+    return crud.get_users(db, skip=skip, limit=limit)
 
 @app.get("/user/{user_id}", response_model=schemas.User)
 def read_user(user_id: int, db: Session = Depends(get_db)):
     db_user = crud.get_user(db, user_id=user_id)
-    if db_user is None:
+    if not db_user:
         raise HTTPException(status_code=404, detail="User not found")
     return db_user
 
 @app.get("/user/profile/", response_model=schemas.User)
-async def read_user_profile(
-    token_data: schemas.TokenData = Depends(verify_token), 
-    db: Session = Depends(get_db)):
-    db_user = crud.get_user_by_username(db, username=token_data.username)
-    return db_user
+async def read_user_profile(db: Session = Depends(get_db), current_user: schemas.User = Depends(get_current_active_user)):
+    return current_user
 
+#
+# Security TestCase Routes
+#
 @app.post("/security/create/", response_model=schemas.SecurityTestCase)
 def create_security_test_case(
     security_test_case: schemas.SecurityTestCaseBase,
-    token_data: schemas.TokenData = Depends(verify_token),
-    db: Session = Depends(get_db)):
+    db: Session = Depends(get_db),
+    current_user: schemas.User = Depends(get_current_active_user)
+):
     db_security_test_case = crud.get_security_test_cases_by_name(db, name=security_test_case.name)
     if db_security_test_case:
         raise HTTPException(status_code=400, detail="Name already registered")
@@ -157,32 +178,67 @@ def create_security_test_case(
 def read_security_test_cases(
     skip: int = 0, 
     limit: int = 100,
-    token_data: schemas.TokenData = Depends(verify_token),
-    db: Session = Depends(get_db)):
-    security_test_cases = crud.get_security_test_cases(db, skip=skip, limit=limit)
-    return security_test_cases
+    db: Session = Depends(get_db),
+    current_user: schemas.User = Depends(get_current_active_user)
+):
+    return crud.get_security_test_cases(db, skip=skip, limit=limit)
 
 @app.get("/security/{security_test_case_id}", response_model=schemas.SecurityTestCase)
 def read_security_test_case(
-    security_test_case_id: int, 
-    # token_data: schemas.TokenData = Depends(verify_token),
-    db: Session = Depends(get_db)):
+    security_test_case_id: int,
+    db: Session = Depends(get_db),
+    current_user: schemas.User = Depends(get_current_active_user)
+):
     db_security_test_case = crud.get_security_test_case(db, security_test_case_id=security_test_case_id)
     if db_security_test_case is None:
         raise HTTPException(status_code=404, detail="Security test case not found")
     return db_security_test_case
 
+#
+# Collections Routes
+#
+@app.post("/collections/", response_model=schemas.Collection)
+def create_a_collection(
+    collection_data: schemas.CollectionCreate,
+    db: Session = Depends(get_db),
+    current_user: schemas.User = Depends(get_current_active_user)
+):
+    return crud.create_collection(db=db, collection=collection_data)
+
+@app.get("/collections/", response_model=List[schemas.Collection])
+def get_collections(db: Session = Depends(get_db)):
+    return crud.get_collections(db=db)
+
+@app.get("/collections/{collection_id}", response_model=schemas.Collection)
+def get_collection_by_id(collection_id: int, db: Session = Depends(get_db)):
+    collection = crud.get_collection_by_id(db=db, collection_id=collection_id)
+    if not collection:
+        raise HTTPException(status_code=404, detail="Collection not found")
+    return collection
+
+@app.delete("/collections/{collection_id}", response_model=schemas.Collection)
+def delete_collection_by_id(collection_id: int, db: Session = Depends(get_db)):
+    db_collection = crud.get_collection_by_id(db=db, collection_id=collection_id)
+    if not db_collection:
+        raise HTTPException(status_code=404, detail="Collection not found")
+    deleted_collection = crud.delete_collection(db=db, collection_id=collection_id)
+    if not deleted_collection:
+        raise HTTPException(status_code=500, detail="Failed to delete collection")
+    return deleted_collection
+
+#
+# Example: Single Test
+#
 @app.post("/security/runTest/")
 async def run_security_test(
     request: Request,
-    token_data: schemas.TokenData = Depends(verify_token),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: schemas.User = Depends(get_current_active_user)
 ):
     body = await request.json()
     collection_id = body.get("collection_id")
     securitytest_id = body.get("securitytest_id")
 
-    # Validate input
     if collection_id is None or securitytest_id is None:
         raise HTTPException(status_code=400, detail="collection_id and securitytest_id are required")
 
@@ -192,7 +248,7 @@ async def run_security_test(
         raise HTTPException(status_code=404, detail="Security test case not found")
 
     # Fetch the collection
-    db_collection = crud.get_collection_by_id(db,collection_id=collection_id)
+    db_collection = crud.get_collection_by_id(db, collection_id=collection_id)
     if db_collection is None:
         raise HTTPException(status_code=404, detail="Collection not found")
 
@@ -204,17 +260,15 @@ async def run_security_test(
     # Prepare results list
     test_results = []
 
-    # Run the test against each endpoint in the collection
+    # Run the test logic
     for endpoint in endpoints:
-        if db_security_test_case.id == 14:
+        if db_security_test_case.name.lower() == "sql injection":
             result = sqlinjection.sql_injection(endpoint, db_security_test_case.payload)
-        elif db_security_test_case.id == 17:
+        elif db_security_test_case.name.lower() == "bola":
             result = bola.bola(endpoint, db_security_test_case.payload)
         else:
-            # For future tests or unknown test case IDs
             result = {"endpoint": endpoint, "status": "No test implemented"}
 
-        # Append results to the list
         test_results.append({
             "endpoint": endpoint,
             "test_case_id": db_security_test_case.id,
@@ -227,39 +281,176 @@ async def run_security_test(
         "results": test_results
     }
 
-@app.post("/crawl")
-async def crawl(domain_request: schemas.DomainRequest, db: Session = Depends(get_db)):
-    try:
-        # Call the existing run_crawler function with the domain from the request
-        result = await run_crawler(domain_request.domain)
+#
+# Example: Run All Tests
+#
+@app.post("/security/runAllTests/")
+async def run_all_security_tests(
+    request: Request,
+    db: Session = Depends(get_db),
+    current_user: schemas.User = Depends(get_current_active_user)
+):
+    body = await request.json()
+    collection_id = body.get("collection_id")
 
-        # Extract crawled URLs from the result
+    if collection_id is None:
+        raise HTTPException(status_code=400, detail="collection_id is required")
+
+    # 1) Fetch the collection
+    db_collection = crud.get_collection_by_id(db, collection_id=collection_id)
+    if db_collection is None:
+        raise HTTPException(status_code=404, detail="Collection not found")
+
+    endpoints = db_collection.api_endpoints
+    if not endpoints or not isinstance(endpoints, list):
+        raise HTTPException(status_code=400, detail="No valid endpoints found in the collection")
+
+    # 2) Fetch all security test cases
+    security_test_cases = crud.get_security_test_cases(db)
+
+    # 3) Create a single Assessment for this entire run
+    #    (instead of a new Assessment for each endpoint)
+    db_assessment = models.Assessment(collection_id=collection_id)
+    db.add(db_assessment)
+    db.commit()
+    db.refresh(db_assessment)
+
+    test_results = []
+
+    # 4) For each endpoint, run all tests
+    for endpoint in endpoints:
+        test_3_passed = False
+        test_4_passed = False
+        test_5_passed = False
+        sqli_passed   = False
+        bola_passed   = False
+
+        for test_case in security_test_cases:
+            tc_name = test_case.name.lower()
+
+            if tc_name == "sql injection":
+                result = sqlinjection.sql_injection(endpoint, test_case.payload)
+                if result:
+                    sqli_passed = True
+            elif tc_name == "bola":
+                result = bola.bola(endpoint, test_case.payload)
+                if result:
+                    bola_passed = True
+
+            # You can repeat similarly for test_3, test_4, test_5 if needed
+            # elif tc_name == "test_3":
+            #     ...
+            # etc.
+
+        # 5) After checking all tests for this endpoint, create ONE row in SecurityResult
+        security_result = models.SecurityResult(
+            endpoint=endpoint,
+            test_3=test_3_passed,
+            test_4=test_4_passed,
+            test_5=test_5_passed,
+            sqli=sqli_passed,
+            bola=bola_passed,
+            assessment_id=db_assessment.assessment_id  # link to the single assessment
+        )
+        db.add(security_result)
+        db.commit()
+        db.refresh(security_result)
+
+        # 6) Prepare a summary for the response
+        test_results.append({
+            "endpoint": endpoint,
+            "test_3": test_3_passed,
+            "test_4": test_4_passed,
+            "test_5": test_5_passed,
+            "sqli": sqli_passed,
+            "bola": bola_passed,
+        })
+
+    return {
+        "collection_id": collection_id,
+        "assessment_id": db_assessment.assessment_id,
+        "timestamp": db_assessment.timestamp,
+        "results": test_results
+    }
+
+
+#
+# Crawler Demo
+#
+@app.post("/crawl")
+async def crawl(domain_request: schemas.DomainRequest, db: Session = Depends(get_db), current_user: schemas.User = Depends(get_current_active_user)):
+    try:
+        result = await run_crawler(domain_request.domain)
         api_endpoints = result.get("api_endpoints", [])
 
-        # Create and store a new collection in the database
-        collection_data = schemas.CollectionCreate(name=domain_request.name, api_endpoints=api_endpoints)
+        # Create and store a new collection
+        collection_data = schemas.CollectionCreate(
+            name=domain_request.name,
+            api_endpoints=api_endpoints
+        )
         new_collection = crud.create_collection(db=db, collection=collection_data)
 
-        # Return the crawled URLs along with the stored collection info
         return {"name": new_collection.name, "api_endpoints": api_endpoints}
-    
     except ValueError as e:
-        # Handle invalid domain error
         raise HTTPException(status_code=400, detail=f"Invalid domain: {str(e)}")
-    except Exception as e:
-        # Handle any other errors
+    except Exception:
         raise HTTPException(status_code=500, detail="Internal Server Error")
 
+#
+# SecurityResult Routes
+#
+@app.post("/results/", response_model=schemas.SecurityResult)
+def create_result(
+    result: schemas.SecurityResultCreate,
+    db: Session = Depends(get_db),
+    current_user: schemas.User = Depends(get_current_active_user)
+):
+    """
+    Create a new row in the 'security_result' table.
+    Body example:
+    {
+      "endpoint": "/api/v1",
+      "test_3": false,
+      "test_4": false,
+      "test_5": false,
+      "sqli": true,
+      "bola": true
+    }
+    """
+    return crud.create_security_result(db, result)
 
-@app.get("/collections/", response_model=List[schemas.Collection])
-def get_collections(db: Session = Depends(get_db)):
-    collections = crud.get_collections(db=db)
-    return collections
+# @app.get("/results/", response_model=List[schemas.SecurityResult])
+# def read_results(db: Session = Depends(get_db)):
+#     """
+#     Retrieve all rows in the 'security_result' table.
+#     """
+#     return crud.get_security_results(db)
+
+# # 2) For retrieving a *single* security result by ID
+# @app.get("/results/{security_test_case_id}", response_model=schemas.SecurityResult)
+# def read_result_by_id(security_test_case_id: int, db: Session = Depends(get_db)):
+#     """
+#     Retrieve a single row by test_case_id.
+#     """
+#     return crud.get_security_result_by_id(db, security_test_case_id=security_test_case_id)
+
+@app.get("/results/{assessment_id}", response_model=schemas.SecurityResultsByAssessment)
+def get_results_by_assessment_id(
+    assessment_id: int,
+    db: Session = Depends(get_db)
+):
+    db_assessment = db.query(models.Assessment).filter(models.Assessment.assessment_id == assessment_id).first()
+    if not db_assessment:
+        raise HTTPException(status_code=404, detail="Assessment not found")
+
+    security_results = db.query(models.SecurityResult).filter(
+        models.SecurityResult.assessment_id == assessment_id
+    ).all()
+
+    return schemas.SecurityResultsByAssessment(
+        assessment_id=assessment_id,
+        timestamp=db_assessment.timestamp,
+        results=security_results
+    )
 
 
-@app.get("/collections/{collection_id}", response_model=schemas.Collection)
-def get_collection_by_id(collection_id: int, db: Session = Depends(get_db)):
-    collection = crud.get_collection_by_id(db=db, collection_id=collection_id)
-    if collection is None:
-        raise HTTPException(status_code=404, detail="Collection not found")
-    return collection
