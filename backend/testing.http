@@ -72,21 +72,62 @@ Content-Type: application/json
 ### Delete API Collection
 DELETE http://localhost:8000/collections/15
 
+### Run All Security Tests
+POST http://localhost:8000/security/runTest/
+Content-Type: application/json  
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjYXBhbmciLCJleHAiOjE3MzY5NzM1MTl9.wBqElWJIY6B38uzAgMn1JqSDJidhEic0UnyiuQzy7Co
+
+{
+  "securitytest_id": 13,
+  "collection_id": 12
+}
 
 ### Run All Security Tests
 POST http://localhost:8000/security/runAllTests/
 Content-Type: application/json  
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjYXBhbmciLCJleHAiOjE3MzY4OTE2OTZ9.MQfzPrQoaJklpkdcCuqfrg-Xa7N4fBSQPZjha_sBndg
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjYXBhbmciLCJleHAiOjE3MzY5NzE2ODl9.IuGEsKuHGVNTwEoWbNlGRSobX1OQ-5ftdrg1w8DOBts
 
 {
-  "collection_id": 11
+  "collection_id": 12
 }
 
-
 ### Get Results
-GET http://localhost:8000/results/12
+GET http://localhost:8000/assessments/35
 Content-Type: application/json  
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjYXBhbmciLCJleHAiOjE3MzY4OTE2OTZ9.MQfzPrQoaJklpkdcCuqfrg-Xa7N4fBSQPZjha_sBndg
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjYXBhbmciLCJleHAiOjE3MzY5NzM1MTl9.wBqElWJIY6B38uzAgMn1JqSDJidhEic0UnyiuQzy7Co
+
+### Get Assessments
+GET http://localhost:8000/assessments/
+Content-Type: application/json  
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjYXBhbmciLCJleHAiOjE3MzY5NTM1MzB9.ocb6uXjykUPe9J99TtAIPnxNeVjwaIKZYXtGHCTPwYo
+
+### Get Assessments
+GET http://localhost:8000/collections/16/assessments/
+Content-Type: application/json  
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjYXBhbmciLCJleHAiOjE3MzY5NjY4MjB9.Ya9l0WlLaFPuMvHWGEeSsFwUSbilKN5yAPwlBRyAhIk
 
 
+### Get analytics
+GET http://localhost:8000/analytics/summary-by-collection
+Content-Type: application/json  
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjYXBhbmciLCJleHAiOjE3MzY5NjY4MjB9.Ya9l0WlLaFPuMvHWGEeSsFwUSbilKN5yAPwlBRyAhIk
 
+### Get analytics
+GET http://localhost:8000/analytics/trends
+Content-Type: application/json  
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjYXBhbmciLCJleHAiOjE3MzY5NjY4MjB9.Ya9l0WlLaFPuMvHWGEeSsFwUSbilKN5yAPwlBRyAhIk
+
+### Get analytics
+GET http://localhost:8000/analytics/overview
+Content-Type: application/json  
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjYXBhbmciLCJleHAiOjE3MzY5NjY4MjB9.Ya9l0WlLaFPuMvHWGEeSsFwUSbilKN5yAPwlBRyAhIk
+
+### Get analytics
+GET http://localhost:8000/analytics/top-endpoints
+Content-Type: application/json  
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjYXBhbmciLCJleHAiOjE3MzY5NjY4MjB9.Ya9l0WlLaFPuMvHWGEeSsFwUSbilKN5yAPwlBRyAhIk
+
+### Get analytics
+GET http://localhost:8000/analytics/vulnerabilities-distribution
+Content-Type: application/json  
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjYXBhbmciLCJleHAiOjE3MzY5NjY4MjB9.Ya9l0WlLaFPuMvHWGEeSsFwUSbilKN5yAPwlBRyAhIk

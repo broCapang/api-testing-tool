@@ -1,0 +1,21 @@
+validate:
+  response_code:
+    gte: 500
+  response_payload:
+    contains_either: "error"
+wordLists:
+  filePaths:
+    - "' OR 1=1 --"
+    - "' UNION SELECT NULL --"
+    - "' DROP TABLE users --"
+    - "'"
+    - "''"
+    - "`"
+    - "``"
+    - ","
+    - "\""
+    - "\"\""
+    - "//"
+    - "\\"
+    - "\\\\"
+    - ";"

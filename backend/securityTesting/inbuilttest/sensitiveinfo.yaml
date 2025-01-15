@@ -1,0 +1,42 @@
+validate:
+  response_code:
+    gte: 200
+    lt: 300
+  response_payload:
+    contains_either:
+      - "password"
+      - "username"
+      - "email"
+      - "credit card"
+      - "ic number"
+
+
+       id |       name        |                description                 |                 payload                 
+----+-------------------+--------------------------------------------+-----------------------------------------
+  1 | BOLA              | Test for BOLA                              | validate:                              +
+    |                   |                                            |   response_code:                       +
+    |                   |                                            |     gte: 200                           +
+    |                   |                                            |     lt: 300
+  2 | SQL Injection     | Test for SQLI                              | wordLists:                             +
+    |                   |                                            |   filePaths:                           +
+    |                   |                                            |     - "' OR 1=1 --"                    +
+    |                   |                                            |     - "' OR 'a'='a"                    +
+    |                   |                                            | validate:                              +
+    |                   |                                            |   response_code:                       +
+    |                   |                                            |     gte: 400                           +
+    |                   |                                            |   response_payload:                    +
+    |                   |                                            |     contains_either: "SQL syntax error"
+  3 | Header Validation | Validating Headers                         | validate:                              +
+    |                   |                                            |   response_code:                       +
+    |                   |                                            |     gte: 200                           +
+    |                   |                                            |     lt: 300                            +
+    |                   |                                            |   response_headers:                    +
+    |                   |                                            |     contains:                          +
+    |                   |                                            |       Content-Type: "application/json"
+  4 | CORE Check        | Cross-Origin Resource Sharing (CORS) Check | validate:                              +
+    |                   |                                            |   response_code:                       +
+    |                   |                                            |     gte: 200                           +
+    |                   |                                            |     lt: 300                            +
+    |                   |                                            |   response_headers:                    +
+    |                   |                                            |     contains:                          +
+    |                   |                                            |       Access-Control-Allow-Origin: "*"

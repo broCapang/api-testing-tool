@@ -14,7 +14,7 @@ from database import SessionLocal, engine
 # Example placeholders for test logic
 # Just make sure your code has these or remove them as needed.
 try:
-    from securityTesting import sqlinjection, bola
+    from securityTesting import validate
 except ImportError:
     # If not available, define placeholders
     class sqlinjection:
@@ -262,10 +262,17 @@ async def run_security_test(
 
     # Run the test logic
     for endpoint in endpoints:
+        print("IN MAIN.py: ",endpoint)
         if db_security_test_case.name.lower() == "sql injection":
-            result = sqlinjection.sql_injection(endpoint, db_security_test_case.payload)
+            result = validate.validate_request(endpoint, db_security_test_case.payload)
         elif db_security_test_case.name.lower() == "bola":
-            result = bola.bola(endpoint, db_security_test_case.payload)
+            result = validate.validate_request(endpoint, db_security_test_case.payload)
+        elif db_security_test_case.name.lower() == "sensitive information":
+            result = validate.validate_request(endpoint, db_security_test_case.payload)
+        elif db_security_test_case.name.lower() == "cors":
+            result = validate.validate_request(endpoint, db_security_test_case.payload)
+        elif db_security_test_case.name.lower() == "header validation":
+            result = validate.validate_request(endpoint, db_security_test_case.payload)
         else:
             result = {"endpoint": endpoint, "status": "No test implemented"}
 
@@ -319,23 +326,30 @@ async def run_all_security_tests(
 
     # 4) For each endpoint, run all tests
     for endpoint in endpoints:
-        test_3_passed = False
-        test_4_passed = False
-        test_5_passed = False
+        cors_passed = False
+        header_passed = False
         sqli_passed   = False
         bola_passed   = False
+        sensitive_passed = False
 
         for test_case in security_test_cases:
             tc_name = test_case.name.lower()
-
+            result = validate.validate_request(endpoint, test_case.payload)
             if tc_name == "sql injection":
-                result = sqlinjection.sql_injection(endpoint, test_case.payload)
                 if result:
                     sqli_passed = True
             elif tc_name == "bola":
-                result = bola.bola(endpoint, test_case.payload)
                 if result:
                     bola_passed = True
+            elif tc_name == "header validation":
+                if result:
+                    header_passed = True
+            elif tc_name == "cors":
+                if result:
+                    cors_passed = True
+            elif tc_name == "sensitive information":
+                if result:
+                    sensitive_passed = True
 
             # You can repeat similarly for test_3, test_4, test_5 if needed
             # elif tc_name == "test_3":
@@ -345,11 +359,11 @@ async def run_all_security_tests(
         # 5) After checking all tests for this endpoint, create ONE row in SecurityResult
         security_result = models.SecurityResult(
             endpoint=endpoint,
-            test_3=test_3_passed,
-            test_4=test_4_passed,
-            test_5=test_5_passed,
+            cors=cors_passed,
+            header=header_passed,
             sqli=sqli_passed,
             bola=bola_passed,
+            sensitive_info=sensitive_passed,
             assessment_id=db_assessment.assessment_id  # link to the single assessment
         )
         db.add(security_result)
@@ -359,9 +373,8 @@ async def run_all_security_tests(
         # 6) Prepare a summary for the response
         test_results.append({
             "endpoint": endpoint,
-            "test_3": test_3_passed,
-            "test_4": test_4_passed,
-            "test_5": test_5_passed,
+            "cors": cors_passed,
+            "header": header_passed,
             "sqli": sqli_passed,
             "bola": bola_passed,
         })
@@ -373,6 +386,22 @@ async def run_all_security_tests(
         "results": test_results
     }
 
+@app.get("/collections/{collection_id}/assessments/", response_model=List[schemas.Assessment])
+def get_assessments_for_collection(collection_id: int, db: Session = Depends(get_db)):
+    """
+    Retrieve a list of assessments associated with a specific collection.
+    """
+    # Fetch the collection
+    collection = crud.get_collection_by_id(db, collection_id=collection_id)
+    if not collection:
+        raise HTTPException(status_code=404, detail="Collection not found")
+
+    # Retrieve assessments for the collection
+    assessments = db.query(models.Assessment).filter(models.Assessment.collection_id == collection_id).all()
+    if not assessments:
+        raise HTTPException(status_code=404, detail="No assessments found for this collection")
+    
+    return assessments
 
 #
 # Crawler Demo
@@ -399,6 +428,7 @@ async def crawl(domain_request: schemas.DomainRequest, db: Session = Depends(get
 #
 # SecurityResult Routes
 #
+
 @app.post("/results/", response_model=schemas.SecurityResult)
 def create_result(
     result: schemas.SecurityResultCreate,
@@ -419,22 +449,8 @@ def create_result(
     """
     return crud.create_security_result(db, result)
 
-# @app.get("/results/", response_model=List[schemas.SecurityResult])
-# def read_results(db: Session = Depends(get_db)):
-#     """
-#     Retrieve all rows in the 'security_result' table.
-#     """
-#     return crud.get_security_results(db)
 
-# # 2) For retrieving a *single* security result by ID
-# @app.get("/results/{security_test_case_id}", response_model=schemas.SecurityResult)
-# def read_result_by_id(security_test_case_id: int, db: Session = Depends(get_db)):
-#     """
-#     Retrieve a single row by test_case_id.
-#     """
-#     return crud.get_security_result_by_id(db, security_test_case_id=security_test_case_id)
-
-@app.get("/results/{assessment_id}", response_model=schemas.SecurityResultsByAssessment)
+@app.get("/assessments/{assessment_id}", response_model=schemas.SecurityResultsByAssessment)
 def get_results_by_assessment_id(
     assessment_id: int,
     db: Session = Depends(get_db)
@@ -453,4 +469,119 @@ def get_results_by_assessment_id(
         results=security_results
     )
 
+@app.get("/assessments/", response_model=List[schemas.Assessment])
+def get_assessments(db: Session = Depends(get_db)):
+    """
+    Retrieve a list of all assessments.
+    """
+    assessments = db.query(models.Assessment).all()
+    if not assessments:
+        raise HTTPException(status_code=404, detail="No assessments found")
+    return assessments
+
+@app.get("/analytics/overview", response_model=dict)
+def get_analytics_overview(db: Session = Depends(get_db)):
+    """
+    Provides a summary of key metrics for the dashboard.
+    """
+    total_users = db.query(models.User).count()
+    total_collections = db.query(models.Collection).count()
+    total_assessments = db.query(models.Assessment).count()
+    total_results = db.query(models.SecurityResult).count()
+
+    return {
+        "total_users": total_users,
+        "total_collections": total_collections,
+        "total_assessments": total_assessments,
+        "total_results": total_results
+    }
+
+
+@app.get("/analytics/trends", response_model=list)
+def get_analytics_trends(db: Session = Depends(get_db)):
+    """
+    Provides time-series data for assessments created.
+    """
+    assessments = db.query(models.Assessment).all()
+    trends = {}
+
+    for assessment in assessments:
+        date = assessment.timestamp.split(" ")[0]
+        trends[date] = trends.get(date, 0) + 1
+
+    return [{"date": k, "count": v} for k, v in sorted(trends.items())]
+
+
+@app.get("/analytics/top-endpoints", response_model=list)
+def get_top_endpoints(db: Session = Depends(get_db)):
+    """
+    Provides a list of top endpoints with the most tests.
+    """
+    results = db.query(models.SecurityResult).all()
+    endpoint_count = {}
+
+    for result in results:
+        endpoint_count[result.endpoint] = endpoint_count.get(result.endpoint, 0) + 1
+
+    top_endpoints = sorted(endpoint_count.items(), key=lambda x: x[1], reverse=True)
+    return [{"endpoint": ep, "tests_count": count} for ep, count in top_endpoints[:10]]
+
+
+@app.get("/analytics/summary-by-collection", response_model=list)
+def get_summary_by_collection(db: Session = Depends(get_db)):
+    """
+    Provides a summary of test results aggregated by collection.
+    """
+    collections = db.query(models.Collection).all()
+    summary = []
+
+    for collection in collections:
+        total_tests = db.query(models.SecurityResult).filter(
+            models.SecurityResult.assessment_id.in_(
+                [a.assessment_id for a in collection.assessments]
+            )
+        ).count()
+
+        summary.append({
+            "collection_name": collection.name,
+            "total_tests": total_tests,
+            "api_endpoints": len(collection.api_endpoints)
+        })
+
+    return summary
+
+@app.get("/analytics/vulnerabilities-distribution", response_model=list)
+def get_vulnerabilities_distribution(db: Session = Depends(get_db)):
+    """
+    Provides the distribution of detected vulnerabilities grouped by type.
+    """
+    # Query all security results
+    results = db.query(models.SecurityResult).all()
+
+    # Initialize a dictionary to count occurrences of each vulnerability type
+    distribution = {
+        "cors": 0,
+        "header": 0,
+        "sensitive_info": 0,
+        "sqli": 0,
+        "bola": 0
+    }
+
+    # Count vulnerabilities
+    for result in results:
+        if result.cors:
+            distribution["cors"] += 1
+        if result.header:
+            distribution["header"] += 1
+        if result.sensitive_info:
+            distribution["sensitive_info"] += 1
+        if result.sqli:
+            distribution["sqli"] += 1
+        if result.bola:
+            distribution["bola"] += 1
+
+    # Convert the dictionary into a list of {type, count} for easier frontend integration
+    distribution_list = [{"type": k, "count": v} for k, v in distribution.items()]
+
+    return distribution_list
 

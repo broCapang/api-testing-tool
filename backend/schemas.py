@@ -65,9 +65,9 @@ class Collection(CollectionBase):
 #
 class SecurityResultBase(BaseModel):
     endpoint: str
-    test_3: bool = False
-    test_4: bool = False
-    test_5: bool = False
+    sensitive_info: bool = False
+    header: bool = False
+    cors: bool = False
     sqli: bool = False
     bola: bool = False
     assessment_id: int

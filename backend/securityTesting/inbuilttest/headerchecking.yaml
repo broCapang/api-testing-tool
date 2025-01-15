@@ -1,0 +1,9 @@
+validate:
+  response_code:
+    gte: 200
+    lt: 300
+  response_headers:
+    contains:
+      Content-Type: "application/json"
+      X-Frame-Options: "DENY"
+      X-XSS-Protection: "1; mode=block"

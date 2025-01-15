@@ -1,0 +1,11 @@
+validate:
+  response_code:
+    gte: 403
+  response_payload:
+    length:
+      gt: 0
+wordLists:
+  filePaths:
+    - "123"
+    - "456"
+    - "789"

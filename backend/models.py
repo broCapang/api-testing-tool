@@ -1,11 +1,16 @@
 from sqlalchemy import Boolean, Column, Integer, String, JSON, ForeignKey
 from sqlalchemy.orm import relationship
 from database import Base
-from sqlalchemy.sql import func
+import datetime
+import pytz
 
 """
 This file defines the database models.
 """
+
+MYT = pytz.timezone('Asia/Kuala_Lumpur')
+
+
 
 class User(Base):
     __tablename__ = "users"
@@ -43,9 +48,9 @@ class SecurityResult(Base):
 
     result_id = Column(Integer, primary_key=True, index=True)
     endpoint = Column(String, nullable=False)
-    test_3 = Column(Boolean, default=False)
-    test_4 = Column(Boolean, default=False)
-    test_5 = Column(Boolean, default=False)
+    cors = Column(Boolean, default=False)
+    header = Column(Boolean, default=False)
+    sensitive_info = Column(Boolean, default=False)
     sqli = Column(Boolean, default=False)
     bola = Column(Boolean, default=False)
     assessment_id = Column(Integer, ForeignKey("assessment.assessment_id"))
@@ -58,7 +63,7 @@ class Assessment(Base):
     __tablename__ = "assessment"
 
     assessment_id = Column(Integer, primary_key=True, index=True)
-    timestamp = Column(String, server_default=func.now())
+    timestamp = Column(String, default=datetime.datetime.now())
     collection_id = Column(Integer, ForeignKey("collection.collection_id"))
 
     # Relationships
